@@ -1,0 +1,185 @@
+import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/form-field";
+import { api } from "@/lib/api";
+
+const schema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "A senha deve ter no mínimo 8 caracteres")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/,
+        "Use maiúscula, minúscula, número e caractere especial",
+      ),
+    confirmPassword: z.string().min(8, "Confirme sua senha"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "A confirmação de senha não confere",
+    path: ["confirmPassword"],
+  });
+
+type FormData = z.infer<typeof schema>;
+
+export default function ResetPasswordPage() {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") ?? "";
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  const passwordValue = watch("newPassword") ?? "";
+
+  const checks = useMemo(
+    () => [
+      { label: "Pelo menos 8 caracteres", valid: passwordValue.length >= 8 },
+      { label: "Letra maiúscula", valid: /[A-Z]/.test(passwordValue) },
+      { label: "Letra minúscula", valid: /[a-z]/.test(passwordValue) },
+      { label: "Número", valid: /\d/.test(passwordValue) },
+      { label: "Caractere especial", valid: /[^A-Za-z\d]/.test(passwordValue) },
+    ],
+    [passwordValue],
+  );
+
+  const score = checks.filter((item) => item.valid).length;
+  const strength =
+    score <= 2
+      ? { label: "Fraca", color: "bg-red-500" }
+      : score <= 4
+        ? { label: "Média", color: "bg-amber-500" }
+        : { label: "Forte", color: "bg-emerald-500" };
+
+  const onSubmit = async (data: FormData) => {
+    setError("");
+    setSuccess("");
+
+    if (!token) {
+      setError("Token de recuperação não encontrado.");
+      return;
+    }
+
+    try {
+      await api.post("/auth/reset-password", {
+        token,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      });
+
+      setSuccess("Senha redefinida com sucesso. Faça login com a nova senha.");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (err) {
+      const apiError = err as { response?: { data?: { message?: string } } };
+      setError(
+        apiError.response?.data?.message ||
+          "Não foi possível redefinir a senha.",
+      );
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary/95 to-neutral-dark p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-primary">Nova senha</h1>
+          <p className="text-gray-500 text-sm">
+            Defina uma nova senha para sua conta
+          </p>
+        </div>
+
+        {!token && (
+          <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+            Token de recuperação ausente ou inválido.
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-emerald-50 border-2 border-emerald-200 text-emerald-900 px-4 py-3 rounded-lg text-sm">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            label="Nova senha"
+            type="password"
+            placeholder="••••••••"
+            error={errors.newPassword?.message}
+            {...register("newPassword")}
+          />
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Força da senha</span>
+              <span className="font-semibold text-gray-800">
+                {strength.label}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className={`h-full transition-all ${strength.color}`}
+                style={{ width: `${(score / checks.length) * 100}%` }}
+              />
+            </div>
+            <ul className="text-xs space-y-1 text-gray-600">
+              {checks.map((item) => (
+                <li
+                  key={item.label}
+                  className={item.valid ? "text-emerald-700" : "text-gray-500"}
+                >
+                  {item.valid ? "✓" : "•"} {item.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <FormField
+            label="Confirmar nova senha"
+            type="password"
+            placeholder="••••••••"
+            error={errors.confirmPassword?.message}
+            {...register("confirmPassword")}
+          />
+
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            disabled={isSubmitting || !token}
+          >
+            {isSubmitting ? "Redefinindo..." : "Redefinir senha"}
+          </Button>
+        </form>
+
+        <p className="text-center text-sm text-gray-600">
+          <Link
+            to="/login"
+            className="font-semibold text-primary hover:underline"
+          >
+            Voltar ao login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
