@@ -3,19 +3,22 @@ import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { queryClient } from "./lib/query-client";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { queryClient } from "@/lib/query-client";
 import "./index.css";
-import App from "./App.tsx";
+import App from "@/App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <App />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </AuthProvider>
+        <NuqsAdapter>
+          <AuthProvider>
+            <App />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </AuthProvider>
+        </NuqsAdapter>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

@@ -1,12 +1,14 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import ConfirmEmailPage from "./pages/ConfirmEmailPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ConfirmEmailPage from "@/pages/ConfirmEmailPage";
+import CreateTeamPage from "@/pages/CreateTeamPage";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import TeamDetailsPage from "@/pages/TeamDetailsPage";
 
 function App() {
   const { isLoading } = useAuth();
@@ -31,6 +33,22 @@ function App() {
         element={
           <ProtectedRoute>
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/teams/new"
+        element={
+          <ProtectedRoute>
+            <CreateTeamPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/teams/:teamId"
+        element={
+          <ProtectedRoute>
+            <TeamDetailsPage />
           </ProtectedRoute>
         }
       />
