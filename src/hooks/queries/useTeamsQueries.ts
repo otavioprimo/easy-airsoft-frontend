@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { Team } from "@/types/teams";
+import { useAuth } from "@/hooks/useAuth";
+import type { Team, TeamMember } from "@/types/teams";
 
 type ApiSuccessResponse<T> = {
   success: boolean;
@@ -8,12 +9,15 @@ type ApiSuccessResponse<T> = {
 };
 
 export function useMyTeamsQuery() {
+  const { user, isAuthenticated } = useAuth();
+
   return useQuery({
-    queryKey: ["teams", "me"],
+    queryKey: ["teams", "me", user?.id],
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<Team[]>>("/teams/me");
       return response.data.data;
     },
+    enabled: isAuthenticated,
   });
 }
 
@@ -23,6 +27,19 @@ export function useTeamQuery(teamId: string) {
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<Team>>(
         `/teams/${teamId}`,
+      );
+      return response.data.data;
+    },
+    enabled: Boolean(teamId),
+  });
+}
+
+export function useTeamMembersQuery(teamId: string) {
+  return useQuery({
+    queryKey: ["teams", teamId, "members"],
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<TeamMember[]>>(
+        `/teams/${teamId}/members`,
       );
       return response.data.data;
     },

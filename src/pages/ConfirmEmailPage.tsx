@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
@@ -38,28 +39,33 @@ export default function ConfirmEmailPage() {
   }, [token]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-light p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-6 text-center">
-        <h1 className="text-2xl font-bold text-primary">
-          Confirmação de email
-        </h1>
-
+    <AuthLayout
+      title="Confirmação de email"
+      subtitle="Estamos validando seu token para concluir a ativação da conta."
+    >
+      <div className="space-y-5 text-center sm:text-left">
         {status === "loading" && (
-          <p className="text-gray-600">Validando token...</p>
+          <p className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-gray-700">
+            Validando token...
+          </p>
         )}
         {status === "success" && (
-          <p className="text-emerald-700 font-medium">{message}</p>
+          <p className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 font-medium text-emerald-700">
+            {message}
+          </p>
         )}
         {status === "error" && (
-          <p className="text-red-700 font-medium">{message}</p>
+          <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 font-medium text-red-700">
+            {message}
+          </p>
         )}
 
-        <Link to="/login">
+        <Link to="/login" className="block">
           <Button className="w-full" size="lg">
             Ir para login
           </Button>
         </Link>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { LocationDateFilters } from "@/types/filters";
 import type {
+  CreateGamePayload,
   GameItem,
   ListGamesResponse,
   ParticipationStatus,
@@ -12,9 +13,12 @@ type ApiSuccessResponse<T> = {
   data: T;
 };
 
-export function useGamesQuery(filters: LocationDateFilters) {
+export function useGamesQuery(
+  filters: LocationDateFilters,
+  location?: { latitude: number; longitude: number } | null,
+) {
   return useQuery({
-    queryKey: ["games", filters],
+    queryKey: ["games", filters, location],
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<ListGamesResponse>>(
         "/games",
@@ -22,6 +26,9 @@ export function useGamesQuery(filters: LocationDateFilters) {
           params: {
             page: 1,
             limit: 20,
+            radiusKm: filters.radiusKm,
+            ...(location ? { latitude: location.latitude } : {}),
+            ...(location ? { longitude: location.longitude } : {}),
             ...(filters.city.trim() ? { city: filters.city.trim() } : {}),
             ...(filters.state.trim()
               ? { state: filters.state.trim().toUpperCase() }
@@ -50,6 +57,20 @@ export function useUpdateParticipationMutation() {
       await api.patch(`/games/${gameId}/participation`, {
         status,
       });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+}
+
+export function useCreateGameMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: CreateGamePayload) => {
+      const response = await api.post<ApiSuccessResponse<GameItem>>("/games", payload);
+      return response.data.data;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["games"] });

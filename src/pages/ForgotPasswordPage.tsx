@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "react-router-dom";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { api } from "@/lib/api";
@@ -56,23 +57,27 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary/95 to-neutral-dark p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-primary">Recuperar senha</h1>
-          <p className="text-gray-500 text-sm">
-            Informe seu e-mail para receber o link de recuperação
-          </p>
-        </div>
-
+    <AuthLayout
+      title="Recuperar senha"
+      subtitle="Informe seu e-mail para receber o link de redefinição."
+      footer={
+        <p className="text-center text-sm text-gray-600">
+          Lembrou sua senha?{" "}
+          <Link to="/login" className="font-semibold text-primary hover:underline">
+            Voltar ao login
+          </Link>
+        </p>
+      }
+    >
+      <div className="space-y-5">
         {error && (
-          <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </div>
         )}
 
         {successMessage && (
-          <div className="bg-emerald-50 border-2 border-emerald-200 text-emerald-900 px-4 py-3 rounded-lg text-sm space-y-2">
+          <div className="space-y-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
             <p>{successMessage}</p>
             {previewUrl && (
               <a
@@ -105,17 +110,7 @@ export default function ForgotPasswordPage() {
             {isSubmitting ? "Enviando..." : "Enviar link"}
           </Button>
         </form>
-
-        <p className="text-center text-sm text-gray-600">
-          Lembrou sua senha?{" "}
-          <Link
-            to="/login"
-            className="font-semibold text-primary hover:underline"
-          >
-            Voltar ao login
-          </Link>
-        </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

@@ -30,7 +30,7 @@ export function HomeGameList({
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={`home-game-skeleton-${index}`}
-            className="bg-white rounded-2xl shadow p-5 space-y-4"
+            className="space-y-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2 w-full">
@@ -63,7 +63,7 @@ export function HomeGameList({
 
   if (games.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow p-6 text-gray-700">
+      <div className="rounded-3xl border border-gray-200 bg-white p-6 text-gray-700 shadow-sm">
         Nenhum jogo ativo encontrado no momento.
       </div>
     );

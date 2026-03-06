@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { api } from "@/lib/api";
@@ -92,29 +93,32 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-primary/95 to-neutral-dark p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-primary">Nova senha</h1>
-          <p className="text-gray-500 text-sm">
-            Defina uma nova senha para sua conta
-          </p>
-        </div>
-
+    <AuthLayout
+      title="Nova senha"
+      subtitle="Defina uma nova senha para recuperar o acesso à sua conta."
+      footer={
+        <p className="text-center text-sm text-gray-600">
+          <Link to="/login" className="font-semibold text-primary hover:underline">
+            Voltar ao login
+          </Link>
+        </p>
+      }
+    >
+      <div className="space-y-5">
         {!token && (
-          <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
             Token de recuperação ausente ou inválido.
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-emerald-50 border-2 border-emerald-200 text-emerald-900 px-4 py-3 rounded-lg text-sm">
+          <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
             {success}
           </div>
         )}
@@ -170,16 +174,7 @@ export default function ResetPasswordPage() {
             {isSubmitting ? "Redefinindo..." : "Redefinir senha"}
           </Button>
         </form>
-
-        <p className="text-center text-sm text-gray-600">
-          <Link
-            to="/login"
-            className="font-semibold text-primary hover:underline"
-          >
-            Voltar ao login
-          </Link>
-        </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

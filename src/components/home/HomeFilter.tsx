@@ -28,8 +28,13 @@ export function HomeFilter({
   onChange,
 }: HomeFilterProps) {
   return (
-    <div className="bg-white rounded-2xl shadow p-4 md:p-5">
-      <div className="grid md:grid-cols-5 gap-3 items-end">
+    <div className="space-y-4 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">
+      <div>
+        <h2 className="text-base font-semibold text-gray-900">Filtros de busca</h2>
+        <p className="text-sm text-gray-600">Refine os jogos por região e data.</p>
+      </div>
+
+      <div className="grid items-end gap-3 md:grid-cols-6">
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Estado</label>
           <Select
@@ -96,6 +101,22 @@ export function HomeFilter({
         </div>
 
         <div className="space-y-1">
+          <label className="text-sm font-medium text-gray-700">Raio (km)</label>
+          <Input
+            type="number"
+            min={1}
+            step={1}
+            value={filters.radiusKm}
+            onChange={(event) =>
+              onChange({
+                ...filters,
+                radiusKm: Number(event.target.value) || 100,
+              })
+            }
+          />
+        </div>
+
+        <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">&nbsp;</label>
           <Button
             type="button"
@@ -103,7 +124,7 @@ export function HomeFilter({
             disabled={isSubmitting}
             onClick={onApply}
           >
-            Aplicar filtros
+            Buscar jogos
           </Button>
         </div>
 

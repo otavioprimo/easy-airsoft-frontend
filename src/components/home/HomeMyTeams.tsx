@@ -10,7 +10,7 @@ type HomeMyTeamsProps = {
 export function HomeMyTeams({ teams, isLoading }: HomeMyTeamsProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl shadow p-6 space-y-3">
+      <div className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-12 w-full" />
         <Skeleton className="h-12 w-full" />
@@ -19,7 +19,7 @@ export function HomeMyTeams({ teams, isLoading }: HomeMyTeamsProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow p-6 space-y-3">
+    <div className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
       <h2 className="text-lg font-semibold text-primary">Meus times</h2>
       {teams.length === 0 ? (
         <p className="text-sm text-gray-600">
@@ -27,11 +27,13 @@ export function HomeMyTeams({ teams, isLoading }: HomeMyTeamsProps) {
         </p>
       ) : (
         <div className="space-y-2">
-          {teams.map((team) => (
-            <Link
+          {teams.map((team) => {
+              const canEditTeam = team.canEdit === true;
+
+              return (
+            <div
               key={team.id}
-              to={`/app/teams/${team.id}`}
-              className="block rounded-lg border border-gray-200 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
+              className="rounded-lg border border-gray-200 px-4 py-3 hover:border-primary hover:bg-primary/5 transition-colors"
             >
               <div className="flex items-center gap-3">
                 {team.logoUrl ? (
@@ -55,8 +57,26 @@ export function HomeMyTeams({ teams, isLoading }: HomeMyTeamsProps) {
                   </p>
                 </div>
               </div>
-            </Link>
-          ))}
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  to={`/app/teams/${team.id}`}
+                  className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:border-primary hover:text-primary"
+                >
+                  Ver time
+                </Link>
+                {canEditTeam && (
+                  <Link
+                    to={`/app/teams/${team.id}/edit`}
+                    className="rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm text-primary hover:bg-primary/10"
+                  >
+                    Editar
+                  </Link>
+                )}
+              </div>
+            </div>
+              );
+            })}
         </div>
       )}
     </div>

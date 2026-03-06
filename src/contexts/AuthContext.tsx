@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { queryClient } from "@/lib/query-client";
 
 interface User {
   id: string;
@@ -7,6 +8,10 @@ interface User {
   name: string;
   username?: string;
   emailVerified: boolean;
+  bio?: string | null;
+  city?: string | null;
+  state?: string | null;
+  profilePhoto?: string | null;
 }
 
 interface EmailConfirmationResult {
@@ -21,6 +26,7 @@ interface AuthContextData {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<EmailConfirmationResult>;
+  syncCurrentUser: (updates: Partial<User>) => void;
 }
 
 interface RegisterData {
@@ -71,6 +77,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
+          queryClient.clear();
           setUser(null);
         }
       } else {
@@ -95,6 +102,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("user", JSON.stringify(user));
 
+    queryClient.clear();
     setUser(user);
   };
 
@@ -107,6 +115,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
+      queryClient.clear();
       setUser(null);
     }
   };
@@ -124,9 +133,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("user", JSON.stringify(user));
 
+    queryClient.clear();
     setUser(user);
 
     return emailConfirmation ?? { sent: false, previewUrl: null };
+  };
+
+  const syncCurrentUser = (updates: Partial<User>) => {
+    setUser((currentUser) => {
+      if (!currentUser) {
+        return currentUser;
+      }
+
+      const nextUser = {
+        ...currentUser,
+        ...updates,
+      };
+
+      localStorage.setItem("user", JSON.stringify(nextUser));
+      return nextUser;
+    });
   };
 
   return (
@@ -138,6 +164,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         login,
         logout,
         register,
+        syncCurrentUser,
       }}
     >
       {children}

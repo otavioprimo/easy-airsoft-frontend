@@ -39,3 +39,14 @@ export type ListGamesResponse = {
     totalPages: number;
   };
 };
+
+export type CreateGamePayload = {
+  teamId: string;
+  fieldId: string;
+  title: string;
+  description?: string;
+  datetime: string;
+  maxPlayers: number;
+  price?: number;
+  externalTicketUrl?: string;
+};

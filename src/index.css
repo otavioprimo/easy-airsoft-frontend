@@ -9,8 +9,18 @@
 }
 
 @layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
   body {
-    @apply bg-neutral-light text-text-dark;
+    @apply bg-neutral-light text-text-dark antialiased;
     font-family:
       system-ui,
       -apple-system,
@@ -18,5 +28,16 @@
       "Segoe UI",
       Roboto,
       sans-serif;
+    background-image:
+      radial-gradient(
+        circle at top left,
+        color-mix(in oklab, var(--color-primary) 10%, transparent),
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at bottom right,
+        color-mix(in oklab, var(--color-accent) 14%, transparent),
+        transparent 36%
+      );
   }
 }

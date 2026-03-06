@@ -19,7 +19,7 @@ export function HomeGameCard({
   const state = game.field?.state || game.state;
 
   return (
-    <div className="bg-white rounded-2xl shadow p-5 space-y-4">
+    <div className="space-y-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-semibold text-primary">{game.title}</h2>

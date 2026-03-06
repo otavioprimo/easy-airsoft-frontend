@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
+import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { FileDropzone } from "@/components/ui/file-dropzone";
 import { FormField } from "@/components/ui/form-field";
@@ -112,24 +113,24 @@ export default function CreateTeamPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-light p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="bg-white rounded-2xl shadow p-6">
+    <AppShell>
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <div className="rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-bold text-primary">Criar time</h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="mt-1 text-sm text-gray-600">
             Preencha os dados para criar seu time no Easy Airsoft.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="bg-red-50 border-2 border-red-200 text-red-800 rounded-xl p-4">
+          <div className="rounded-2xl border border-red-300 bg-red-50/80 p-4 text-red-800">
             {errorMessage}
           </div>
         )}
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white rounded-2xl shadow p-6 space-y-4"
+          className="space-y-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
         >
           <FormField
             label="Nome do time"
@@ -286,6 +287,6 @@ export default function CreateTeamPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </AppShell>
   );
 }
