@@ -2,19 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import { parseAsString, useQueryStates } from "nuqs";
 import {
   EMPTY_LOCATION_DATE_FILTERS,
+  RADIUS_FILTER_OPTIONS,
   type LocationDateFilters,
 } from "@/types/filters";
 
 function normalizeFilters(filters: LocationDateFilters): LocationDateFilters {
   const parsedRadius = Number(filters.radiusKm);
-  const normalizedRadius =
-    Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : 100;
+  const normalizedRadius = RADIUS_FILTER_OPTIONS.includes(parsedRadius as 20 | 40 | 60 | 100 | 200)
+    ? parsedRadius
+    : EMPTY_LOCATION_DATE_FILTERS.radiusKm;
 
   return {
     city: filters.city.trim(),
     state: filters.state.trim().toUpperCase(),
     date: filters.date,
-    radiusKm: Math.round(normalizedRadius),
+    radiusKm: normalizedRadius,
   };
 }
 

@@ -12,6 +12,7 @@ type GameActionMutation = {
 type HomeGameListProps = {
   games: GameItem[];
   isLoading: boolean;
+  userLocation: { latitude: number; longitude: number } | null;
   updateParticipationMutation: GameActionMutation;
   onUpdateParticipation: (gameId: string, status: ParticipationStatus) => void;
   formatDate: Intl.DateTimeFormat;
@@ -20,6 +21,7 @@ type HomeGameListProps = {
 export function HomeGameList({
   games,
   isLoading,
+  userLocation,
   updateParticipationMutation,
   onUpdateParticipation,
   formatDate,
@@ -80,6 +82,7 @@ export function HomeGameList({
           <HomeGameCard
             key={game.id}
             game={game}
+            userLocation={userLocation}
             isActionLoading={isActionLoading}
             formatDate={formatDate}
             onUpdateParticipation={onUpdateParticipation}

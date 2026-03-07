@@ -15,7 +15,10 @@ import {
   useIbgeCitiesByStateQuery,
   useIbgeStatesQuery,
 } from "@/hooks/queries/useIbgeQueries";
-import { useUpdateFieldMutation } from "@/hooks/queries/useFieldsMutations";
+import {
+  useCreateFieldMutation,
+  useUpdateFieldMutation,
+} from "@/hooks/queries/useFieldsMutations";
 import { useFieldQuery } from "@/hooks/queries/useFieldsQueries";
 import { useUploadImageMutation } from "@/hooks/queries/useUploadsMutations";
 import { useTeamMembersQuery, useTeamQuery } from "@/hooks/queries/useTeamsQueries";
@@ -76,6 +79,7 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 export default function EditFieldPage() {
   const navigate = useNavigate();
   const { teamId = "", fieldId = "" } = useParams();
+  const isCreateMode = !fieldId;
   const { user } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadedPhotos, setUploadedPhotos] = useState<UploadedPhoto[]>([]);
@@ -94,6 +98,7 @@ export default function EditFieldPage() {
   const membersQuery = useTeamMembersQuery(teamId);
   const fieldQuery = useFieldQuery(fieldId);
   const statesQuery = useIbgeStatesQuery();
+  const createFieldMutation = useCreateFieldMutation();
   const updateFieldMutation = useUpdateFieldMutation(fieldId, teamId);
   const uploadImageMutation = useUploadImageMutation();
 
@@ -126,9 +131,13 @@ export default function EditFieldPage() {
   });
 
   const currentUserRole = currentUserMembership?.role as TeamRole | undefined;
-  const canEditField = currentUserRole === "OWNER" || currentUserRole === "ADMIN";
+  const canManageField = currentUserRole === "OWNER" || currentUserRole === "ADMIN";
 
   useEffect(() => {
+    if (isCreateMode) {
+      return;
+    }
+
     const field = fieldQuery.data;
 
     if (!field) {
@@ -149,9 +158,21 @@ export default function EditFieldPage() {
         filename: `Foto ${index + 1}`,
       })),
     );
-  }, [fieldQuery.data, reset]);
+  }, [isCreateMode, fieldQuery.data, reset]);
 
-  const handlePhotoUpload = async (file: File) => {
+  const uploadSinglePhoto = async (file: File) => {
+    const uploadResult = await uploadImageMutation.mutateAsync({
+      file,
+      folder: "fields",
+    });
+
+    setUploadedPhotos((current) => [
+      ...current,
+      { url: uploadResult.fileUrl, filename: file.name },
+    ]);
+  };
+
+  const handlePhotoUploads = async (files: File[]) => {
     setErrorMessage("");
 
     if (uploadedPhotos.length >= 10) {
@@ -159,19 +180,20 @@ export default function EditFieldPage() {
       return;
     }
 
-    try {
-      const uploadResult = await uploadImageMutation.mutateAsync({
-        file,
-        folder: "fields",
-      });
+    const remainingSlots = 10 - uploadedPhotos.length;
+    const filesToUpload = files.slice(0, remainingSlots);
 
-      setUploadedPhotos((current) => [
-        ...current,
-        { url: uploadResult.fileUrl, filename: file.name },
-      ]);
+    try {
+      for (const file of filesToUpload) {
+        await uploadSinglePhoto(file);
+      }
+
+      if (files.length > remainingSlots) {
+        setErrorMessage("Limite de 10 fotos atingido. Algumas imagens não foram adicionadas.");
+      }
     } catch (error) {
       setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível enviar a foto do campo."),
+        getApiErrorMessage(error, "Não foi possível enviar as fotos do campo."),
       );
     }
   };
@@ -341,24 +363,41 @@ export default function EditFieldPage() {
     setErrorMessage("");
 
     try {
-      await updateFieldMutation.mutateAsync({
-        name: data.name.trim(),
-        state: data.state.trim().toUpperCase(),
-        city: data.city.trim(),
-        latitude: Number(data.latitude),
-        longitude: Number(data.longitude),
-        photos: uploadedPhotos.map((photo) => photo.url),
-      });
+      if (isCreateMode) {
+        await createFieldMutation.mutateAsync({
+          teamId,
+          name: data.name.trim(),
+          state: data.state.trim().toUpperCase(),
+          city: data.city.trim(),
+          latitude: Number(data.latitude),
+          longitude: Number(data.longitude),
+          photos: uploadedPhotos.map((photo) => photo.url),
+        });
+      } else {
+        await updateFieldMutation.mutateAsync({
+          name: data.name.trim(),
+          state: data.state.trim().toUpperCase(),
+          city: data.city.trim(),
+          latitude: Number(data.latitude),
+          longitude: Number(data.longitude),
+          photos: uploadedPhotos.map((photo) => photo.url),
+        });
+      }
 
       navigate(`/app/teams/${teamId}`);
     } catch (error) {
       setErrorMessage(
-        getApiErrorMessage(error, "Não foi possível atualizar o campo."),
+        getApiErrorMessage(
+          error,
+          isCreateMode
+            ? "Não foi possível criar o campo."
+            : "Não foi possível atualizar o campo.",
+        ),
       );
     }
   };
 
-  if (teamQuery.isLoading || membersQuery.isLoading || fieldQuery.isLoading) {
+  if (teamQuery.isLoading || membersQuery.isLoading || (!isCreateMode && fieldQuery.isLoading)) {
     return (
       <AppShell>
         <div className="mx-auto max-w-4xl space-y-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -391,7 +430,11 @@ export default function EditFieldPage() {
     );
   }
 
-  if (teamQuery.isError || !teamQuery.data || fieldQuery.isError || !fieldQuery.data) {
+  if (
+    teamQuery.isError ||
+    !teamQuery.data ||
+    (!isCreateMode && (fieldQuery.isError || !fieldQuery.data))
+  ) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800">
@@ -404,11 +447,13 @@ export default function EditFieldPage() {
     );
   }
 
-  if (!canEditField) {
+  if (!canManageField) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
-          <p>Apenas OWNER ou ADMIN do time podem editar campos.</p>
+          <p>
+            Apenas OWNER ou ADMIN do time podem {isCreateMode ? "criar" : "editar"} campos.
+          </p>
           <Link to={`/app/teams/${teamId}`}>
             <Button variant="outline">Voltar para o time</Button>
           </Link>
@@ -423,9 +468,12 @@ export default function EditFieldPage() {
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
         <div className="rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-primary">Editar campo do time</h1>
+          <h1 className="text-2xl font-bold text-primary">
+            {isCreateMode ? "Criar campo do time" : "Editar campo do time"}
+          </h1>
           <p className="mt-1 text-sm text-gray-600">
-            Atualize os dados do campo para <span className="font-semibold">{team.name}</span>.
+            {isCreateMode ? "Cadastre" : "Atualize"} os dados do campo para{" "}
+            <span className="font-semibold">{team.name}</span>.
           </p>
         </div>
 
@@ -632,17 +680,20 @@ export default function EditFieldPage() {
             </div>
 
             <FileDropzone
-              onFileSelect={handlePhotoUpload}
+              onFileSelect={uploadSinglePhoto}
+              onFilesSelect={handlePhotoUploads}
+              multiple
               disabled={
                 uploadImageMutation.isPending ||
                 isSubmitting ||
+                createFieldMutation.isPending ||
                 updateFieldMutation.isPending ||
                 uploadedPhotos.length >= 10
               }
             />
 
             {uploadImageMutation.isPending && (
-              <p className="text-sm text-gray-600">Enviando foto...</p>
+              <p className="text-sm text-gray-600">Enviando fotos...</p>
             )}
 
             {uploadedPhotos.length > 0 && (
@@ -680,13 +731,18 @@ export default function EditFieldPage() {
               type="submit"
               disabled={
                 isSubmitting ||
+                createFieldMutation.isPending ||
                 updateFieldMutation.isPending ||
                 uploadImageMutation.isPending
               }
             >
-              {isSubmitting || updateFieldMutation.isPending
-                ? "Salvando campo..."
-                : "Salvar alterações"}
+              {isSubmitting || createFieldMutation.isPending || updateFieldMutation.isPending
+                ? isCreateMode
+                  ? "Criando campo..."
+                  : "Salvando campo..."
+                : isCreateMode
+                  ? "Criar campo"
+                  : "Salvar alterações"}
             </Button>
             <Button
               type="button"
@@ -694,6 +750,7 @@ export default function EditFieldPage() {
               onClick={() => navigate(`/app/teams/${teamId}`)}
               disabled={
                 isSubmitting ||
+                createFieldMutation.isPending ||
                 updateFieldMutation.isPending ||
                 uploadImageMutation.isPending
               }

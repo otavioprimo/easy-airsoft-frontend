@@ -2,9 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ConfirmEmailPage from "@/pages/ConfirmEmailPage";
-import CreateFieldPage from "@/pages/CreateFieldPage";
 import CreateGamePage from "@/pages/CreateGamePage";
-import CreateTeamPage from "@/pages/CreateTeamPage";
 import EditFieldPage from "@/pages/EditFieldPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import HomePage from "@/pages/HomePage";
@@ -65,7 +63,7 @@ function App() {
         path="/app/teams/new"
         element={
           <ProtectedRoute>
-            <CreateTeamPage />
+            <TeamDetailsPage />
           </ProtectedRoute>
         }
       />
@@ -73,7 +71,7 @@ function App() {
         path="/app/teams/:teamId/fields/new"
         element={
           <ProtectedRoute>
-            <CreateFieldPage />
+            <EditFieldPage />
           </ProtectedRoute>
         }
       />

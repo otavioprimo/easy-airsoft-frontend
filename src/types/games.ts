@@ -18,6 +18,7 @@ export type GameItem = {
   city?: string | null;
   state?: string | null;
   status?: string | null;
+  myParticipationStatus?: ParticipationStatus | null;
   team?: {
     id: string;
     name: string;
@@ -27,6 +28,8 @@ export type GameItem = {
     name: string;
     city?: string | null;
     state?: string | null;
+    latitude?: number | string | null;
+    longitude?: number | string | null;
   } | null;
 };
 

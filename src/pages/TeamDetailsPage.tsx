@@ -18,6 +18,7 @@ import {
   useIbgeStatesQuery,
 } from "@/hooks/queries/useIbgeQueries";
 import {
+  useCreateTeamMutation,
   useDeleteTeamMutation,
   useGenerateTeamInviteCodeMutation,
   useRemoveTeamMemberMutation,
@@ -70,6 +71,7 @@ function normalizeUpdatePayload(data: EditTeamFormData, logoUrl?: string) {
 export default function TeamDetailsPage() {
   const navigate = useNavigate();
   const { teamId = "" } = useParams();
+  const isCreateMode = !teamId;
   const { user } = useAuth();
   const [teamErrorMessage, setTeamErrorMessage] = useState("");
   const [teamSuccessMessage, setTeamSuccessMessage] = useState("");
@@ -87,6 +89,7 @@ export default function TeamDetailsPage() {
   const teamQuery = useTeamQuery(teamId);
   const membersQuery = useTeamMembersQuery(teamId);
   const statesQuery = useIbgeStatesQuery();
+  const createTeamMutation = useCreateTeamMutation();
   const generateInviteCodeMutation = useGenerateTeamInviteCodeMutation(teamId);
   const updateTeamMutation = useUpdateTeamMutation(teamId);
   const deleteTeamMutation = useDeleteTeamMutation(teamId);
@@ -116,14 +119,19 @@ export default function TeamDetailsPage() {
   });
 
   const currentUserRole = currentUserMembership?.role as TeamRole | undefined;
-  const canManageTeam = currentUserRole === "OWNER" || currentUserRole === "ADMIN";
-  const canDeleteTeam = currentUserRole === "OWNER";
+  const canManageTeam =
+    isCreateMode || currentUserRole === "OWNER" || currentUserRole === "ADMIN";
+  const canDeleteTeam = !isCreateMode && currentUserRole === "OWNER";
 
   const stateValue = (watch("state") || "").trim().toUpperCase();
   const cityValue = watch("city") || "";
   const citiesQuery = useIbgeCitiesByStateQuery(stateValue);
 
   useEffect(() => {
+    if (isCreateMode) {
+      return;
+    }
+
     const team = teamQuery.data;
 
     if (!team) {
@@ -139,7 +147,7 @@ export default function TeamDetailsPage() {
 
     setLogoUrl(team.logoUrl || undefined);
     setLogoFilename(team.logoUrl ? "Logo atual" : "");
-  }, [teamQuery.data, reset]);
+  }, [isCreateMode, teamQuery.data, reset]);
 
   const handleLogoFileSelect = async (file: File) => {
     setTeamErrorMessage("");
@@ -158,16 +166,29 @@ export default function TeamDetailsPage() {
     }
   };
 
-  const handleUpdateTeam = async (data: EditTeamFormData) => {
+  const handleSubmitTeam = async (data: EditTeamFormData) => {
     setTeamErrorMessage("");
     setTeamSuccessMessage("");
 
     try {
+      if (isCreateMode) {
+        const createdTeam = await createTeamMutation.mutateAsync(
+          normalizeUpdatePayload(data, logoUrl),
+        );
+        navigate(`/app/teams/${createdTeam.id}/edit`);
+        return;
+      }
+
       await updateTeamMutation.mutateAsync(normalizeUpdatePayload(data, logoUrl));
       setTeamSuccessMessage("Dados do time atualizados com sucesso.");
     } catch (error) {
       setTeamErrorMessage(
-        getApiErrorMessage(error, "Não foi possível atualizar os dados do time."),
+        getApiErrorMessage(
+          error,
+          isCreateMode
+            ? "Não foi possível criar o time."
+            : "Não foi possível atualizar os dados do time.",
+        ),
       );
     }
   };
@@ -287,7 +308,7 @@ export default function TeamDetailsPage() {
     });
   };
 
-  if (teamQuery.isLoading) {
+  if (!isCreateMode && teamQuery.isLoading) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -299,7 +320,7 @@ export default function TeamDetailsPage() {
     );
   }
 
-  if (membersQuery.isLoading) {
+  if (!isCreateMode && membersQuery.isLoading) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -311,7 +332,7 @@ export default function TeamDetailsPage() {
     );
   }
 
-  if (teamQuery.isError || !teamQuery.data) {
+  if (!isCreateMode && (teamQuery.isError || !teamQuery.data)) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800">
@@ -325,76 +346,94 @@ export default function TeamDetailsPage() {
   }
 
   const team = teamQuery.data;
+  const teamIdValue = team?.id ?? "";
 
-  if (!canManageTeam) {
+  if (!isCreateMode && !canManageTeam) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
           <p>Apenas OWNER ou ADMIN podem acessar esta área de gerenciamento.</p>
-          <Link to={`/app/teams/${team.id}`}>
+          <Link to={`/app/teams/${teamIdValue}`}>
             <Button variant="outline">Voltar para o time</Button>
           </Link>
         </div>
       </AppShell>
     );
   }
-  const canConfirmDelete = deleteConfirmationText.trim() === team.name;
+  const canConfirmDelete = !isCreateMode && team
+    ? deleteConfirmationText.trim() === team.name
+    : false;
+  const isSavingTeam =
+    isSubmitting ||
+    uploadImageMutation.isPending ||
+    createTeamMutation.isPending ||
+    updateTeamMutation.isPending;
 
   return (
     <AppShell>
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            {team.logoUrl ? (
-              <img
-                src={team.logoUrl}
-                alt={`Logo do time ${team.name}`}
-                className="h-16 w-16 rounded-xl object-cover border border-gray-200"
-              />
-            ) : (
-              <div className="h-16 w-16 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xl font-bold">
-                {team.name.charAt(0).toUpperCase()}
-              </div>
-            )}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {!isCreateMode && team?.logoUrl ? (
+                <img
+                  src={team.logoUrl}
+                  alt={`Logo do time ${team.name}`}
+                  className="h-16 w-16 rounded-xl object-cover border border-gray-200"
+                />
+              ) : (
+                <div className="h-16 w-16 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center text-xl font-bold">
+                  {(watch("name")?.trim().charAt(0) || "T").toUpperCase()}
+                </div>
+              )}
 
-            <div>
-              <h1 className="text-2xl font-bold text-primary">Gerenciar {team.name}</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {team.city && team.state
-                  ? `${team.city}/${team.state}`
-                  : "Localização não informada"}
-              </p>
+              <div>
+                <h1 className="text-2xl font-bold text-primary">
+                  {isCreateMode ? "Criar time" : `Gerenciar ${team?.name ?? "time"}`}
+                </h1>
+                {!isCreateMode && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {team?.city && team?.state
+                      ? `${team.city}/${team.state}`
+                      : "Localização não informada"}
+                  </p>
+                )}
+              </div>
             </div>
+
           </div>
         </div>
 
+        {!isCreateMode && team && (
         <div className="space-y-2 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-primary">Sobre o time</h2>
           <p className="text-sm text-gray-700">
             {team.description || "Sem descrição cadastrada."}
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
-            <Link to={`/app/teams/${team.id}`}>
+            <Link to={`/app/teams/${teamIdValue}`}>
               <Button variant="outline">Ver página do time</Button>
-            </Link>
-            <Link to={`/app/teams/${team.id}/fields/new`}>
-              <Button>Criar campo do time</Button>
             </Link>
           </div>
         </div>
+        )}
 
         {canManageTeam && (
           <section
             className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
           >
             <form
-              onSubmit={handleSubmit(handleUpdateTeam)}
+              onSubmit={handleSubmit(handleSubmitTeam)}
               className="space-y-4"
             >
             <div>
-              <h2 className="text-lg font-semibold text-primary">Editar time</h2>
+              <h2 className="text-lg font-semibold text-primary">
+                {isCreateMode ? "Novo time" : "Editar time"}
+              </h2>
               <p className="text-sm text-gray-600">
-                Atualize os dados públicos do seu time.
+                {isCreateMode
+                  ? "Preencha os dados para criar o time."
+                  : "Atualize os dados públicos do seu time."}
               </p>
             </div>
 
@@ -484,6 +523,7 @@ export default function TeamDetailsPage() {
                 disabled={
                   uploadImageMutation.isPending ||
                   isSubmitting ||
+                  createTeamMutation.isPending ||
                   updateTeamMutation.isPending
                 }
               />
@@ -511,6 +551,7 @@ export default function TeamDetailsPage() {
                     }}
                     disabled={
                       isSubmitting ||
+                      createTeamMutation.isPending ||
                       updateTeamMutation.isPending ||
                       uploadImageMutation.isPending
                     }
@@ -536,15 +577,15 @@ export default function TeamDetailsPage() {
             <div className="flex flex-wrap gap-2 pt-1">
               <Button
                 type="submit"
-                disabled={
-                  isSubmitting ||
-                  updateTeamMutation.isPending ||
-                  uploadImageMutation.isPending
-                }
+                disabled={isSavingTeam}
               >
-                {isSubmitting || updateTeamMutation.isPending
-                  ? "Salvando..."
-                  : "Salvar alterações"}
+                {isSavingTeam
+                  ? isCreateMode
+                    ? "Criando..."
+                    : "Salvando..."
+                  : isCreateMode
+                    ? "Criar time"
+                    : "Salvar alterações"}
               </Button>
 
               {canDeleteTeam && (
@@ -568,6 +609,7 @@ export default function TeamDetailsPage() {
           </section>
         )}
 
+        {!isCreateMode && team && (
         <div className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
           <div>
             <h2 className="text-lg font-semibold text-primary">
@@ -626,7 +668,9 @@ export default function TeamDetailsPage() {
             </p>
           )}
         </div>
+        )}
 
+        {!isCreateMode && (
         <TeamMembersPanel
           members={membersQuery.data ?? []}
           currentUserId={user?.id}
@@ -639,8 +683,9 @@ export default function TeamDetailsPage() {
           onChangeRole={handleChangeMemberRole}
           onRemoveMember={handleRemoveMember}
         />
+        )}
 
-        {isDeleteModalOpen && (
+        {!isCreateMode && isDeleteModalOpen && team && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4">
             <div className="w-full max-w-md rounded-2xl border border-red-200 bg-white p-6 shadow-xl">
               <h3 className="text-lg font-semibold text-red-700">Excluir time</h3>

@@ -249,6 +249,7 @@ export default function HomePage() {
               <HomeGameList
                 games={games}
                 isLoading={isLoading}
+                userLocation={userLocation}
                 updateParticipationMutation={updateParticipationMutation}
                 onUpdateParticipation={handleUpdateParticipation}
                 formatDate={formatDate}

@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import type { LocationDateFilters } from "@/types/filters";
+import {
+  RADIUS_FILTER_OPTIONS,
+  type LocationDateFilters,
+} from "@/types/filters";
 import type { StateOption } from "@/types/ibge";
 
 type HomeFilterProps = {
@@ -102,10 +105,7 @@ export function HomeFilter({
 
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Raio (km)</label>
-          <Input
-            type="number"
-            min={1}
-            step={1}
+          <Select
             value={filters.radiusKm}
             onChange={(event) =>
               onChange({
@@ -113,7 +113,13 @@ export function HomeFilter({
                 radiusKm: Number(event.target.value) || 100,
               })
             }
-          />
+          >
+            {RADIUS_FILTER_OPTIONS.map((radiusOption) => (
+              <option key={radiusOption} value={radiusOption}>
+                {radiusOption} km
+              </option>
+            ))}
+          </Select>
         </div>
 
         <div className="space-y-1">

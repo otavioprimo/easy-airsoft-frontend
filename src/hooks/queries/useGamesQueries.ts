@@ -21,7 +21,7 @@ export function useGamesQuery(
     queryKey: ["games", filters, location],
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<ListGamesResponse>>(
-        "/games",
+        "/games/secure",
         {
           params: {
             page: 1,

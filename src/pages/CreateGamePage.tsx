@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
@@ -50,8 +50,10 @@ type CreateGameFormData = z.infer<typeof createGameSchema>;
 
 export default function CreateGamePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const myTeamsQuery = useMyTeamsQuery();
   const createGameMutation = useCreateGameMutation();
+  const preferredTeamId = (searchParams.get("teamId") || "").trim();
 
   const manageableTeams = (myTeamsQuery.data ?? []).filter((team) => {
     return team.currentUserRole === "OWNER" || team.currentUserRole === "ADMIN";
@@ -89,11 +91,23 @@ export default function CreateGamePage() {
     const currentTeamId = selectedTeamId;
     const teamExists = manageableTeams.some((team) => team.id === currentTeamId);
 
-    if (!currentTeamId || !teamExists) {
-      setValue("teamId", manageableTeams[0].id, { shouldValidate: true });
-      setValue("fieldId", "", { shouldValidate: true });
+    if (currentTeamId && teamExists) {
+      return;
     }
-  }, [manageableTeams, selectedTeamId, setValue]);
+
+    const preferredTeamExists = manageableTeams.some(
+      (team) => team.id === preferredTeamId,
+    );
+
+    if (preferredTeamId && preferredTeamExists) {
+      setValue("teamId", preferredTeamId, { shouldValidate: true });
+      setValue("fieldId", "", { shouldValidate: true });
+      return;
+    }
+
+    setValue("teamId", manageableTeams[0].id, { shouldValidate: true });
+    setValue("fieldId", "", { shouldValidate: true });
+  }, [manageableTeams, preferredTeamId, selectedTeamId, setValue]);
 
   useEffect(() => {
     const fields = teamFieldsQuery.data ?? [];

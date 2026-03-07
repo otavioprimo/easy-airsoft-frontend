@@ -3,6 +3,7 @@ type HomeGameMetaProps = {
   fieldName?: string | null;
   city?: string | null;
   state?: string | null;
+  distanceKm?: number | null;
   price?: number | string | null;
   confirmedCount?: number | null;
   interestedCount?: number | null;
@@ -14,6 +15,7 @@ export function HomeGameMeta({
   fieldName,
   city,
   state,
+  distanceKm,
   price,
   confirmedCount,
   interestedCount,
@@ -30,6 +32,12 @@ export function HomeGameMeta({
       <p>
         <span className="font-medium">Local:</span>{" "}
         {city && state ? `${city}/${state}` : "-"}
+      </p>
+      <p>
+        <span className="font-medium">Distância:</span>{" "}
+        {distanceKm !== null && distanceKm !== undefined
+          ? `${distanceKm.toFixed(1)} km`
+          : "-"}
       </p>
       <p>
         <span className="font-medium">Preço:</span>{" "}

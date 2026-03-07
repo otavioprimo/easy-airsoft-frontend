@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 
 type FileDropzoneProps = {
   onFileSelect: (file: File) => void;
+  onFilesSelect?: (files: File[]) => void;
+  multiple?: boolean;
   accept?: string;
   disabled?: boolean;
   className?: string;
@@ -11,6 +13,8 @@ type FileDropzoneProps = {
 
 export function FileDropzone({
   onFileSelect,
+  onFilesSelect,
+  multiple = false,
   accept = "image/jpeg,image/png,image/webp",
   disabled = false,
   className,
@@ -19,6 +23,11 @@ export function FileDropzone({
 
   const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0 || disabled) {
+      return;
+    }
+
+    if (multiple && onFilesSelect) {
+      onFilesSelect(Array.from(files));
       return;
     }
 
@@ -59,6 +68,7 @@ export function FileDropzone({
       <input
         ref={inputRef}
         type="file"
+        multiple={multiple}
         accept={accept}
         className="hidden"
         disabled={disabled}
@@ -71,7 +81,7 @@ export function FileDropzone({
       <div className="flex flex-col items-center gap-2 text-sm text-gray-600">
         <Upload className="h-5 w-5 text-gray-500" />
         <p>
-          Arraste o logo aqui ou{" "}
+          {multiple ? "Arraste os arquivos aqui ou" : "Arraste o logo aqui ou"}{" "}
           <span className="font-semibold text-primary">
             clique para selecionar
           </span>
