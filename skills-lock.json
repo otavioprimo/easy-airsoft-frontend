@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "Frontend Responsive Design Standards": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "7b16cf170e7701494d246e48cfb968ed8ef11cd3ce83c99ed6b914b1ca302e07"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
