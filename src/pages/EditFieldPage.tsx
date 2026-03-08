@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FileDropzone } from "@/components/ui/file-dropzone";
 import { FormField } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useIbgeCitiesByStateQuery,
@@ -503,25 +503,26 @@ export default function EditFieldPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="state">Estado</Label>
-                <Select
-                  id="state"
+                <SearchSelect
+                  items={(statesQuery.data ?? []).map((stateOption) => ({
+                    value: stateOption.code,
+                    label: `${stateOption.code} - ${stateOption.name}`,
+                  }))}
                   value={stateValue}
-                  onChange={(event) => {
-                    const nextState = event.target.value;
+                  onChange={(nextState) => {
                     setValue("state", nextState, { shouldValidate: true });
                     setValue("city", "", { shouldValidate: true });
                   }}
+                  placeholder={statesQuery.isLoading ? "Carregando..." : "Selecione"}
+                  searchPlaceholder="Buscar estado..."
+                  emptyText="Nenhum estado encontrado."
                   disabled={statesQuery.isLoading}
-                >
-                  <option value="">
-                    {statesQuery.isLoading ? "Carregando..." : "Selecione"}
-                  </option>
-                  {(statesQuery.data ?? []).map((stateOption) => (
-                    <option key={stateOption.code} value={stateOption.code}>
-                      {stateOption.code} - {stateOption.name}
-                    </option>
-                  ))}
-                </Select>
+                  clearable
+                  onClear={() => {
+                    setValue("state", "", { shouldValidate: true });
+                    setValue("city", "", { shouldValidate: true });
+                  }}
+                />
                 {errors.state && (
                   <p className="text-sm text-red-600">{errors.state.message}</p>
                 )}
@@ -529,29 +530,30 @@ export default function EditFieldPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="city">Cidade</Label>
-                <Select
-                  id="city"
+                <SearchSelect
+                  items={(citiesByStateQuery.data ?? []).map((cityOption) => ({
+                    value: cityOption,
+                    label: cityOption,
+                  }))}
                   value={cityValue}
-                  onChange={(event) => {
-                    setValue("city", event.target.value, {
+                  onChange={(nextCity) => {
+                    setValue("city", nextCity, {
                       shouldValidate: true,
                     });
                   }}
+                  placeholder={!stateValue
+                    ? "Selecione um estado"
+                    : citiesByStateQuery.isLoading
+                      ? "Carregando..."
+                      : "Selecione"}
+                  searchPlaceholder="Buscar cidade..."
+                  emptyText="Nenhuma cidade encontrada."
                   disabled={!stateValue || citiesByStateQuery.isLoading}
-                >
-                  <option value="">
-                    {!stateValue
-                      ? "Selecione um estado"
-                      : citiesByStateQuery.isLoading
-                        ? "Carregando..."
-                        : "Selecione"}
-                  </option>
-                  {(citiesByStateQuery.data ?? []).map((cityOption) => (
-                    <option key={cityOption} value={cityOption}>
-                      {cityOption}
-                    </option>
-                  ))}
-                </Select>
+                  clearable
+                  onClear={() => {
+                    setValue("city", "", { shouldValidate: true });
+                  }}
+                />
                 {errors.city && (
                   <p className="text-sm text-red-600">{errors.city.message}</p>
                 )}

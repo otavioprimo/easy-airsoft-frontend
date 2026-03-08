@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import {
   RADIUS_FILTER_OPTIONS,
   type LocationDateFilters,
@@ -39,119 +39,133 @@ export function HomeFilter({
         <p className="text-sm text-gray-600">Refine os jogos por região e data.</p>
       </div>
 
-      <div className="grid items-end gap-3 md:grid-cols-6">
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Estado</label>
-          <Select
-            value={filters.state}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                state: event.target.value,
-                city: "",
-              })
-            }
-            disabled={isLoadingStates}
-          >
-            <option value="">
-              {isLoadingStates ? "Carregando..." : "Selecione"}
-            </option>
-            {states.map((stateOption) => (
-              <option key={stateOption.code} value={stateOption.code}>
-                {stateOption.code} - {stateOption.name}
-              </option>
-            ))}
-          </Select>
-        </div>
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Estado</label>
+            <SearchSelect
+              items={(states ?? []).map((stateOption) => ({
+                value: stateOption.code,
+                label: `${stateOption.code} - ${stateOption.name}`,
+              }))}
+              value={filters.state}
+              onChange={(nextState) =>
+                onChange({
+                  ...filters,
+                  state: nextState,
+                  city: "",
+                })
+              }
+              placeholder={isLoadingStates ? "Carregando..." : "Selecione"}
+              searchPlaceholder="Buscar estado..."
+              emptyText="Nenhum estado encontrado."
+              classNameList="max-h-64"
+              disabled={isLoadingStates}
+              clearable
+              onClear={() =>
+                onChange({
+                  ...filters,
+                  state: "",
+                  city: "",
+                })
+              }
+            />
+          </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Cidade</label>
-          <Select
-            value={filters.city}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                city: event.target.value,
-              })
-            }
-            disabled={!filters.state || isLoadingCities}
-          >
-            <option value="">
-              {!filters.state
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Cidade</label>
+            <SearchSelect
+              items={(cities ?? []).map((cityOption) => ({
+                value: cityOption,
+                label: cityOption,
+              }))}
+              value={filters.city}
+              onChange={(nextCity) =>
+                onChange({
+                  ...filters,
+                  city: nextCity,
+                })
+              }
+              placeholder={!filters.state
                 ? "Selecione um estado"
                 : isLoadingCities
                   ? "Carregando..."
                   : "Selecione"}
-            </option>
-            {cities.map((cityOption) => (
-              <option key={cityOption} value={cityOption}>
-                {cityOption}
-              </option>
-            ))}
-          </Select>
+              searchPlaceholder="Buscar cidade..."
+              emptyText="Nenhuma cidade encontrada."
+              classNameList="max-h-64"
+              disabled={!filters.state || isLoadingCities}
+              clearable
+              onClear={() =>
+                onChange({
+                  ...filters,
+                  city: "",
+                })
+              }
+            />
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Data</label>
-          <Input
-            type="date"
-            value={filters.date}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                date: event.target.value,
-              })
-            }
-          />
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Data</label>
+            <Input
+              type="date"
+              value={filters.date}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  date: event.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Raio (km)</label>
+            <SearchSelect
+              items={RADIUS_FILTER_OPTIONS.map((radiusOption) => ({
+                value: String(radiusOption),
+                label: `${radiusOption} km`,
+              }))}
+              value={String(filters.radiusKm)}
+              disabled={!hasUserLocation}
+              onChange={(nextRadius) =>
+                onChange({
+                  ...filters,
+                  radiusKm: Number(nextRadius) || 100,
+                })
+              }
+              placeholder="Selecione"
+              searchPlaceholder="Buscar raio..."
+              emptyText="Nenhum raio encontrado."
+              classNameList="max-h-64"
+            />
+            {!hasUserLocation && (
+              <p className="text-xs text-amber-700">
+                Ative a localização para filtrar por distância.
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Raio (km)</label>
-          <Select
-            value={filters.radiusKm}
-            disabled={!hasUserLocation}
-            onChange={(event) =>
-              onChange({
-                ...filters,
-                radiusKm: Number(event.target.value) || 100,
-              })
-            }
-          >
-            {RADIUS_FILTER_OPTIONS.map((radiusOption) => (
-              <option key={radiusOption} value={radiusOption}>
-                {radiusOption} km
-              </option>
-            ))}
-          </Select>
-          {!hasUserLocation && (
-            <p className="text-xs text-amber-700">
-              Ative a localização para filtrar por distância.
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">&nbsp;</label>
-          <Button
-            type="button"
-            className="w-full"
-            disabled={isSubmitting}
-            onClick={onApply}
-          >
-            Buscar jogos
-          </Button>
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">&nbsp;</label>
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full sm:w-auto"
             disabled={isSubmitting}
             onClick={onClear}
           >
             Limpar
+          </Button>
+          <Button
+            type="button"
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+            onClick={onApply}
+          >
+            Buscar jogos
           </Button>
         </div>
       </div>

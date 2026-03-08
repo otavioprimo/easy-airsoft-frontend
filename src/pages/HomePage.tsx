@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   HomeFilter,
   HomeGameList,
   HomeHeader,
   HomeJoinTeamCard,
-  HomeMyTeams,
   HomeParticipationLists,
 } from "@/components/home";
 import { AppShell } from "@/components/layout/AppShell";
@@ -23,7 +21,6 @@ import {
   useIbgeStatesQuery,
 } from "@/hooks/queries/useIbgeQueries";
 import { useJoinTeamByCodeMutation } from "@/hooks/queries/useTeamsMutations";
-import { useMyTeamsQuery } from "@/hooks/queries/useTeamsQueries";
 import {
   clearPendingTeamInviteCode,
   getPendingTeamInviteCode,
@@ -31,8 +28,7 @@ import {
 import type { ParticipationStatus } from "@/types/games";
 
 export default function HomePage() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -58,7 +54,6 @@ export default function HomePage() {
   const myParticipationGamesQuery = useMyParticipationGamesQuery();
   const statesQuery = useIbgeStatesQuery();
   const citiesQuery = useIbgeCitiesByStateQuery(filters.state);
-  const myTeamsQuery = useMyTeamsQuery();
   const joinTeamByCodeMutation = useJoinTeamByCodeMutation();
   const updateParticipationMutation = useUpdateParticipationMutation();
 
@@ -138,7 +133,6 @@ export default function HomePage() {
           if (options?.clearPendingOnSuccess) {
             clearPendingTeamInviteCode();
           }
-          void myTeamsQuery.refetch();
         },
         onError: (error) => {
           const message = getQueryErrorMessage(
@@ -190,19 +184,8 @@ export default function HomePage() {
       <div className="space-y-6">
         <HomeHeader
           userName={user?.name}
-          userPhoto={user?.profilePhoto}
           totalGames={games.length}
           isLoadingGames={isLoading}
-          onOpenProfile={() => {
-            navigate("/app/profile");
-          }}
-          onCreateGame={() => {
-            navigate("/app/games/new");
-          }}
-          onCreateTeam={() => {
-            navigate("/app/teams/new");
-          }}
-          onLogout={logout}
         />
 
         {user && !user.emailVerified && (
@@ -212,7 +195,7 @@ export default function HomePage() {
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-5">
             <HomeFilter
               filters={filters}
@@ -244,7 +227,7 @@ export default function HomePage() {
             )}
 
             <section className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-xl font-semibold text-gray-900">Jogos disponíveis</h2>
                 <span className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-sm text-gray-600">
                   {isLoading ? "..." : games.length} resultado(s)
@@ -262,16 +245,11 @@ export default function HomePage() {
             </section>
           </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <aside className="grid gap-4 sm:grid-cols-2 xl:sticky xl:top-6 xl:grid-cols-1 xl:self-start">
             <HomeParticipationLists
               games={myParticipationGames}
               isLoading={myParticipationGamesQuery.isLoading}
               formatDate={formatDate}
-            />
-
-            <HomeMyTeams
-              teams={myTeamsQuery.data ?? []}
-              isLoading={myTeamsQuery.isLoading}
             />
 
             <HomeJoinTeamCard

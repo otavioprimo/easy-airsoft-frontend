@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import { useCreateGameMutation, getQueryErrorMessage } from "@/hooks/queries/useGamesQueries";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
 import { useMyTeamsQuery } from "@/hooks/queries/useTeamsQueries";
@@ -212,20 +212,20 @@ export default function CreateGamePage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="teamId">Time responsável</Label>
-                <Select
-                  id="teamId"
+                <SearchSelect
+                  items={manageableTeams.map((team) => ({
+                    value: team.id,
+                    label: team.name,
+                  }))}
                   value={selectedTeamId}
-                  onChange={(event) => {
-                    setValue("teamId", event.target.value, { shouldValidate: true });
+                  onChange={(nextTeamId) => {
+                    setValue("teamId", nextTeamId, { shouldValidate: true });
                     setValue("fieldId", "", { shouldValidate: true });
                   }}
-                >
-                  {manageableTeams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
-                    </option>
-                  ))}
-                </Select>
+                  placeholder="Selecione o time"
+                  searchPlaceholder="Buscar time..."
+                  emptyText="Nenhum time encontrado."
+                />
                 {errors.teamId && (
                   <p className="text-sm text-red-600">{errors.teamId.message}</p>
                 )}
@@ -233,28 +233,26 @@ export default function CreateGamePage() {
 
               <div className="space-y-2">
                 <Label htmlFor="fieldId">Campo</Label>
-                <Select
-                  id="fieldId"
+                <SearchSelect
+                  items={fields.map((field) => ({
+                    value: field.id,
+                    label: `${field.name} • ${field.city}/${field.state}`,
+                  }))}
                   value={selectedFieldId}
-                  onChange={(event) => {
-                    setValue("fieldId", event.target.value, { shouldValidate: true });
+                  onChange={(nextFieldId) => {
+                    setValue("fieldId", nextFieldId, { shouldValidate: true });
                   }}
+                  placeholder={!selectedTeamId
+                    ? "Selecione um time"
+                    : teamFieldsQuery.isLoading
+                      ? "Carregando campos..."
+                      : fields.length === 0
+                        ? "Nenhum campo cadastrado"
+                        : "Selecione o campo"}
+                  searchPlaceholder="Buscar campo..."
+                  emptyText="Nenhum campo encontrado."
                   disabled={!selectedTeamId || teamFieldsQuery.isLoading || !fields.length}
-                >
-                  {!selectedTeamId ? (
-                    <option value="">Selecione um time</option>
-                  ) : teamFieldsQuery.isLoading ? (
-                    <option value="">Carregando campos...</option>
-                  ) : fields.length === 0 ? (
-                    <option value="">Nenhum campo cadastrado</option>
-                  ) : (
-                    fields.map((field) => (
-                      <option key={field.id} value={field.id}>
-                        {field.name} • {field.city}/{field.state}
-                      </option>
-                    ))
-                  )}
-                </Select>
+                />
                 {errors.fieldId && (
                   <p className="text-sm text-red-600">{errors.fieldId.message}</p>
                 )}

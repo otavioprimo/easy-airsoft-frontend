@@ -1,5 +1,8 @@
+import { Link } from "react-router-dom";
+
 type HomeGameMetaProps = {
   teamName?: string | null;
+  teamId?: string | null;
   fieldName?: string | null;
   city?: string | null;
   state?: string | null;
@@ -12,6 +15,7 @@ type HomeGameMetaProps = {
 
 export function HomeGameMeta({
   teamName,
+  teamId,
   fieldName,
   city,
   state,
@@ -22,9 +26,19 @@ export function HomeGameMeta({
   maxPlayers,
 }: HomeGameMetaProps) {
   return (
-    <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-700">
+    <div className="grid gap-2 text-sm text-gray-700 sm:grid-cols-2">
       <p>
-        <span className="font-medium">Time:</span> {teamName ?? "-"}
+        <span className="font-medium">Time:</span>{" "}
+        {teamName && teamId ? (
+          <Link
+            to={`/teams/${teamId}`}
+            className="font-medium text-primary underline underline-offset-2"
+          >
+            {teamName}
+          </Link>
+        ) : (
+          teamName ?? "-"
+        )}
       </p>
       <p>
         <span className="font-medium">Campo:</span> {fieldName ?? "-"}

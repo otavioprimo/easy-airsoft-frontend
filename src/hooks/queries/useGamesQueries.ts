@@ -83,6 +83,27 @@ export function useTeamGamesQuery(teamId: string) {
     enabled: Boolean(teamId),
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<ListGamesResponse>>(
+        "/games",
+        {
+          params: {
+            page: 1,
+            limit: 50,
+            teamId,
+          },
+        },
+      );
+
+      return response.data.data.items;
+    },
+  });
+}
+
+export function useTeamGamesSecureQuery(teamId: string) {
+  return useQuery({
+    queryKey: ["games", "team", "secure", teamId],
+    enabled: Boolean(teamId),
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<ListGamesResponse>>(
         "/games/secure",
         {
           params: {

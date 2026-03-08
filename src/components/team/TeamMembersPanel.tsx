@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import type { TeamMember, TeamRole } from "@/types/teams";
 
 type TeamMembersPanelProps = {
@@ -95,18 +95,20 @@ export function TeamMembersPanel({
 
                 <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
                   {canChangeRole ? (
-                    <Select
+                    <SearchSelect
+                      items={[
+                        { value: "ADMIN", label: "Admin" },
+                        { value: "MEMBER", label: "Membro" },
+                      ]}
                       value={member.role}
-                      onChange={(event) => {
-                        const nextRole = event.target.value as Exclude<TeamRole, "OWNER">;
+                      onChange={(nextRole) => {
                         onChangeRole(memberUserId, nextRole);
                       }}
                       disabled={isUpdatingRole || isRemovingMember}
                       className="min-w-36"
-                    >
-                      <option value="ADMIN">Admin</option>
-                      <option value="MEMBER">Membro</option>
-                    </Select>
+                      searchPlaceholder="Buscar papel..."
+                      emptyText="Nenhum papel encontrado."
+                    />
                   ) : (
                     <span className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
                       {formatRoleLabel(member.role)}

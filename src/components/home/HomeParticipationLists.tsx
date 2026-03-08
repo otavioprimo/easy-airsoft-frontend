@@ -53,7 +53,7 @@ export function HomeParticipationLists({
   const activeLabel = activeTab === "CONFIRMED" ? "confirmou presença" : "tem interesse";
 
   return (
-    <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+    <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="space-y-1">
         <h2 className="text-base font-semibold text-gray-900">Minha participação</h2>
         <p className="text-sm text-gray-600">
@@ -66,6 +66,7 @@ export function HomeParticipationLists({
           type="button"
           size="sm"
           variant={activeTab === "CONFIRMED" ? "default" : "outline"}
+          className="text-xs sm:text-sm"
           onClick={() => {
             setActiveTab("CONFIRMED");
           }}
@@ -76,6 +77,7 @@ export function HomeParticipationLists({
           type="button"
           size="sm"
           variant={activeTab === "INTERESTED" ? "default" : "outline"}
+          className="text-xs sm:text-sm"
           onClick={() => {
             setActiveTab("INTERESTED");
           }}

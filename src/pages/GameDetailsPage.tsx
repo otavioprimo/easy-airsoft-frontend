@@ -196,6 +196,7 @@ export default function GameDetailsPage() {
 
           <HomeGameMeta
             teamName={game.team?.name}
+            teamId={game.team?.id}
             fieldName={game.field?.name}
             city={city}
             state={state}

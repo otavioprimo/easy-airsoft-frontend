@@ -25,6 +25,7 @@ interface SearchSelectProps {
   items: SearchSelectItem[];
   value?: string;
   onChange?: (value: string) => void;
+  disabled?: boolean;
   placeholder?: string;
   searchPlaceholder?: string;
   onSearch?: (searchTerm: string) => void | Promise<void>;
@@ -42,6 +43,7 @@ const SearchSelect = React.forwardRef<HTMLDivElement, SearchSelectProps>(
       items,
       value,
       onChange,
+      disabled = false,
       placeholder = "Selecione uma opção",
       searchPlaceholder = "Buscar...",
       onSearch,
@@ -92,6 +94,7 @@ const SearchSelect = React.forwardRef<HTMLDivElement, SearchSelectProps>(
               variant="outline"
               role="combobox"
               aria-expanded={open}
+              disabled={disabled}
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 text-neutral-700 font-normal"
             >
               <span className="max-w-[calc(100%-32px)] overflow-hidden text-ellipsis">
@@ -112,7 +115,7 @@ const SearchSelect = React.forwardRef<HTMLDivElement, SearchSelectProps>(
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-full p-0" align="start">
-            <Command shouldFilter={false}>
+            <Command shouldFilter={!onSearch}>
               <CommandInput
                 placeholder={searchPlaceholder}
                 value={searchTerm}
@@ -135,7 +138,7 @@ const SearchSelect = React.forwardRef<HTMLDivElement, SearchSelectProps>(
                         {items.map((item) => (
                           <CommandItem
                             key={item.value}
-                            value={item.value}
+                            value={item.label}
                             onSelect={() => handleSelect(item.value)}
                             className="cursor-pointer"
                           >

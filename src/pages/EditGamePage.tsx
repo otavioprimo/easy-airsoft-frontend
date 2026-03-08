@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import {
   getQueryErrorMessage,
   useGameDetailsQuery,
@@ -231,26 +231,24 @@ export default function EditGamePage() {
 
             <div className="space-y-2">
               <Label htmlFor="fieldId">Campo</Label>
-              <Select
-                id="fieldId"
+              <SearchSelect
+                items={fields.map((field) => ({
+                  value: field.id,
+                  label: `${field.name} • ${field.city}/${field.state}`,
+                }))}
                 value={selectedFieldId}
-                onChange={(event) => {
-                  setValue("fieldId", event.target.value, { shouldValidate: true });
+                onChange={(nextFieldId) => {
+                  setValue("fieldId", nextFieldId, { shouldValidate: true });
                 }}
+                placeholder={fieldsQuery.isLoading
+                  ? "Carregando campos..."
+                  : fields.length === 0
+                    ? "Nenhum campo cadastrado"
+                    : "Selecione o campo"}
+                searchPlaceholder="Buscar campo..."
+                emptyText="Nenhum campo encontrado."
                 disabled={fieldsQuery.isLoading || !fields.length}
-              >
-                {fieldsQuery.isLoading ? (
-                  <option value="">Carregando campos...</option>
-                ) : fields.length === 0 ? (
-                  <option value="">Nenhum campo cadastrado</option>
-                ) : (
-                  fields.map((field) => (
-                    <option key={field.id} value={field.id}>
-                      {field.name} • {field.city}/{field.state}
-                    </option>
-                  ))
-                )}
-              </Select>
+              />
               {errors.fieldId && (
                 <p className="text-sm text-red-600">{errors.fieldId.message}</p>
               )}

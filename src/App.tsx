@@ -10,6 +10,7 @@ import GameDetailsPage from "@/pages/GameDetailsPage";
 import HomePage from "@/pages/HomePage";
 import InviteTeamPage from "@/pages/InviteTeamPage";
 import LoginPage from "@/pages/LoginPage";
+import MyTeamsPage from "@/pages/MyTeamsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import RegisterPage from "@/pages/RegisterPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -78,6 +79,14 @@ function App() {
         }
       />
       <Route
+        path="/app/teams"
+        element={
+          <ProtectedRoute>
+            <MyTeamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/app/teams/new"
         element={
           <ProtectedRoute>
@@ -109,6 +118,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/teams/:teamId" element={<TeamOverviewPage />} />
       <Route
         path="/app/teams/:teamId/edit"
         element={
