@@ -9,6 +9,7 @@ import type { StateOption } from "@/types/ibge";
 
 type HomeFilterProps = {
   filters: LocationDateFilters;
+  hasUserLocation: boolean;
   states: StateOption[];
   cities: string[];
   isLoadingStates: boolean;
@@ -21,6 +22,7 @@ type HomeFilterProps = {
 
 export function HomeFilter({
   filters,
+  hasUserLocation,
   states,
   cities,
   isLoadingStates,
@@ -107,6 +109,7 @@ export function HomeFilter({
           <label className="text-sm font-medium text-gray-700">Raio (km)</label>
           <Select
             value={filters.radiusKm}
+            disabled={!hasUserLocation}
             onChange={(event) =>
               onChange({
                 ...filters,
@@ -120,6 +123,11 @@ export function HomeFilter({
               </option>
             ))}
           </Select>
+          {!hasUserLocation && (
+            <p className="text-xs text-amber-700">
+              Ative a localização para filtrar por distância.
+            </p>
+          )}
         </div>
 
         <div className="space-y-1">

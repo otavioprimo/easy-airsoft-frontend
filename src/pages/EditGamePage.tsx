@@ -1,19 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { useCreateGameMutation, getQueryErrorMessage } from "@/hooks/queries/useGamesQueries";
+import {
+  getQueryErrorMessage,
+  useGameDetailsQuery,
+  useUpdateGameMutation,
+} from "@/hooks/queries/useGamesQueries";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
 import { useMyTeamsQuery } from "@/hooks/queries/useTeamsQueries";
 
-const createGameSchema = z.object({
-  teamId: z.string().min(1, "Selecione o time responsável"),
+const editGameSchema = z.object({
   fieldId: z.string().min(1, "Selecione o campo"),
   title: z
     .string()
@@ -47,29 +50,54 @@ const createGameSchema = z.object({
     ),
 });
 
-type CreateGameFormData = z.infer<typeof createGameSchema>;
+type EditGameFormData = z.infer<typeof editGameSchema>;
 
-export default function CreateGamePage() {
+function toDatetimeLocalValue(isoDateTime: string) {
+  const date = new Date(isoDateTime);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const pad = (value: number) => String(value).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+export default function EditGamePage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const myTeamsQuery = useMyTeamsQuery();
-  const createGameMutation = useCreateGameMutation();
-  const preferredTeamId = (searchParams.get("teamId") || "").trim();
+  const { gameId = "" } = useParams();
 
-  const manageableTeams = (myTeamsQuery.data ?? []).filter((team) => {
-    return team.currentUserRole === "OWNER" || team.currentUserRole === "ADMIN";
-  });
+  const gameQuery = useGameDetailsQuery(gameId);
+  const updateGameMutation = useUpdateGameMutation(gameId);
+  const myTeamsQuery = useMyTeamsQuery();
+
+  const teamId = gameQuery.data?.team?.id ?? "";
+  const fieldsQuery = useTeamFieldsQuery(teamId);
+
+  const manageableTeamIds = useMemo(() => {
+    return (myTeamsQuery.data ?? [])
+      .filter((team) => team.currentUserRole === "OWNER" || team.currentUserRole === "ADMIN")
+      .map((team) => team.id);
+  }, [myTeamsQuery.data]);
+
+  const canEditGame = Boolean(teamId && manageableTeamIds.includes(teamId));
 
   const {
     register,
     handleSubmit,
-    watch,
+    reset,
+    control,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<CreateGameFormData>({
-    resolver: zodResolver(createGameSchema),
+  } = useForm<EditGameFormData>({
+    resolver: zodResolver(editGameSchema),
     defaultValues: {
-      teamId: "",
       fieldId: "",
       title: "",
       description: "",
@@ -80,54 +108,44 @@ export default function CreateGamePage() {
     },
   });
 
-  const selectedTeamId = watch("teamId") || "";
-  const selectedFieldId = watch("fieldId") || "";
-  const teamFieldsQuery = useTeamFieldsQuery(selectedTeamId);
+  const selectedFieldId = useWatch({
+    control,
+    name: "fieldId",
+  }) || "";
+  const fields = useMemo(() => fieldsQuery.data ?? [], [fieldsQuery.data]);
 
   useEffect(() => {
-    if (!manageableTeams.length) {
+    const game = gameQuery.data;
+
+    if (!game) {
       return;
     }
 
-    const currentTeamId = selectedTeamId;
-    const teamExists = manageableTeams.some((team) => team.id === currentTeamId);
-
-    if (currentTeamId && teamExists) {
-      return;
-    }
-
-    const preferredTeamExists = manageableTeams.some(
-      (team) => team.id === preferredTeamId,
-    );
-
-    if (preferredTeamId && preferredTeamExists) {
-      setValue("teamId", preferredTeamId, { shouldValidate: true });
-      setValue("fieldId", "", { shouldValidate: true });
-      return;
-    }
-
-    setValue("teamId", manageableTeams[0].id, { shouldValidate: true });
-    setValue("fieldId", "", { shouldValidate: true });
-  }, [manageableTeams, preferredTeamId, selectedTeamId, setValue]);
+    reset({
+      fieldId: game.field?.id ?? "",
+      title: game.title,
+      description: game.description ?? "",
+      datetime: toDatetimeLocalValue(game.datetime),
+      maxPlayers: String(game.maxPlayers),
+      price: game.price !== null && game.price !== undefined ? String(game.price) : "",
+      externalTicketUrl: game.externalTicketUrl ?? "",
+    });
+  }, [gameQuery.data, reset]);
 
   useEffect(() => {
-    const fields = teamFieldsQuery.data ?? [];
-    const hasCurrentField = fields.some((field) => field.id === selectedFieldId);
-
     if (!fields.length) {
-      setValue("fieldId", "", { shouldValidate: true });
       return;
     }
 
+    const hasCurrentField = fields.some((field) => field.id === selectedFieldId);
     if (!selectedFieldId || !hasCurrentField) {
       setValue("fieldId", fields[0].id, { shouldValidate: true });
     }
-  }, [teamFieldsQuery.data, selectedFieldId, setValue]);
+  }, [fields, selectedFieldId, setValue]);
 
-  const onSubmit = async (data: CreateGameFormData) => {
+  const onSubmit = async (data: EditGameFormData) => {
     try {
-      await createGameMutation.mutateAsync({
-        teamId: data.teamId,
+      const updatedGame = await updateGameMutation.mutateAsync({
         fieldId: data.fieldId,
         title: data.title.trim(),
         description: data.description?.trim() || undefined,
@@ -137,32 +155,31 @@ export default function CreateGamePage() {
         externalTicketUrl: data.externalTicketUrl?.trim() || undefined,
       });
 
-      navigate("/app");
+      navigate(`/app/games/${updatedGame.id}`);
     } catch {
       // error handled below
     }
   };
 
-  const errorMessage =
-    (createGameMutation.error &&
-      getQueryErrorMessage(createGameMutation.error, "Não foi possível criar o jogo.")) ||
-    "";
-
-  if (myTeamsQuery.isLoading) {
+  if (gameQuery.isLoading || myTeamsQuery.isLoading) {
     return (
       <AppShell>
         <div className="mx-auto max-w-4xl rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-600">Carregando seus times...</p>
+          <p className="text-sm text-gray-600">Carregando dados do jogo...</p>
         </div>
       </AppShell>
     );
   }
 
-  if (myTeamsQuery.isError) {
+  if (gameQuery.isError || !gameQuery.data) {
+    const errorMessage = gameQuery.error
+      ? getQueryErrorMessage(gameQuery.error, "Não foi possível carregar o jogo.")
+      : "Não foi possível carregar o jogo.";
+
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800">
-          <p>Não foi possível carregar os times.</p>
+          <p>{errorMessage}</p>
           <Link to="/app">
             <Button variant="outline">Voltar para Home</Button>
           </Link>
@@ -171,28 +188,31 @@ export default function CreateGamePage() {
     );
   }
 
-  if (!manageableTeams.length) {
+  if (!canEditGame) {
     return (
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
-          <p>Você precisa ser OWNER ou ADMIN de um time para criar jogos.</p>
-          <Link to="/app/teams/new">
-            <Button>Criar time</Button>
+          <p>Apenas OWNER ou ADMIN do time responsável podem editar este jogo.</p>
+          <Link to={`/app/games/${gameId}`}>
+            <Button variant="outline">Voltar para detalhes do jogo</Button>
           </Link>
         </div>
       </AppShell>
     );
   }
 
-  const fields = teamFieldsQuery.data ?? [];
+  const errorMessage =
+    (updateGameMutation.error &&
+      getQueryErrorMessage(updateGameMutation.error, "Não foi possível atualizar o jogo.")) ||
+    "";
 
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
         <div className="rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-bold text-primary">Criar jogo</h1>
+          <h1 className="text-2xl font-bold text-primary">Editar jogo</h1>
           <p className="mt-1 text-sm text-gray-600">
-            Configure os dados da partida e publique para os jogadores.
+            Atualize os dados da partida e salve as alterações.
           </p>
         </div>
 
@@ -209,68 +229,32 @@ export default function CreateGamePage() {
           <section className="space-y-4 rounded-2xl border border-gray-200 p-4">
             <h2 className="text-base font-semibold text-gray-900">Organização</h2>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="teamId">Time responsável</Label>
-                <Select
-                  id="teamId"
-                  value={selectedTeamId}
-                  onChange={(event) => {
-                    setValue("teamId", event.target.value, { shouldValidate: true });
-                    setValue("fieldId", "", { shouldValidate: true });
-                  }}
-                >
-                  {manageableTeams.map((team) => (
-                    <option key={team.id} value={team.id}>
-                      {team.name}
+            <div className="space-y-2">
+              <Label htmlFor="fieldId">Campo</Label>
+              <Select
+                id="fieldId"
+                value={selectedFieldId}
+                onChange={(event) => {
+                  setValue("fieldId", event.target.value, { shouldValidate: true });
+                }}
+                disabled={fieldsQuery.isLoading || !fields.length}
+              >
+                {fieldsQuery.isLoading ? (
+                  <option value="">Carregando campos...</option>
+                ) : fields.length === 0 ? (
+                  <option value="">Nenhum campo cadastrado</option>
+                ) : (
+                  fields.map((field) => (
+                    <option key={field.id} value={field.id}>
+                      {field.name} • {field.city}/{field.state}
                     </option>
-                  ))}
-                </Select>
-                {errors.teamId && (
-                  <p className="text-sm text-red-600">{errors.teamId.message}</p>
+                  ))
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="fieldId">Campo</Label>
-                <Select
-                  id="fieldId"
-                  value={selectedFieldId}
-                  onChange={(event) => {
-                    setValue("fieldId", event.target.value, { shouldValidate: true });
-                  }}
-                  disabled={!selectedTeamId || teamFieldsQuery.isLoading || !fields.length}
-                >
-                  {!selectedTeamId ? (
-                    <option value="">Selecione um time</option>
-                  ) : teamFieldsQuery.isLoading ? (
-                    <option value="">Carregando campos...</option>
-                  ) : fields.length === 0 ? (
-                    <option value="">Nenhum campo cadastrado</option>
-                  ) : (
-                    fields.map((field) => (
-                      <option key={field.id} value={field.id}>
-                        {field.name} • {field.city}/{field.state}
-                      </option>
-                    ))
-                  )}
-                </Select>
-                {errors.fieldId && (
-                  <p className="text-sm text-red-600">{errors.fieldId.message}</p>
-                )}
-              </div>
+              </Select>
+              {errors.fieldId && (
+                <p className="text-sm text-red-600">{errors.fieldId.message}</p>
+              )}
             </div>
-
-            {selectedTeamId && !teamFieldsQuery.isLoading && fields.length === 0 && (
-              <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                Este time ainda não tem campo. Crie um campo primeiro.
-                <div className="mt-2">
-                  <Link to={`/app/teams/${selectedTeamId}/fields/new`}>
-                    <Button variant="outline" size="sm">Criar campo</Button>
-                  </Link>
-                </div>
-              </div>
-            )}
           </section>
 
           <section className="space-y-4 rounded-2xl border border-gray-200 p-4">
@@ -338,22 +322,17 @@ export default function CreateGamePage() {
           <div className="flex flex-wrap gap-2 pt-1">
             <Button
               type="submit"
-              disabled={
-                isSubmitting ||
-                createGameMutation.isPending ||
-                !selectedTeamId ||
-                fields.length === 0
-              }
+              disabled={isSubmitting || updateGameMutation.isPending}
             >
-              {isSubmitting || createGameMutation.isPending
-                ? "Criando jogo..."
-                : "Criar jogo"}
+              {isSubmitting || updateGameMutation.isPending
+                ? "Salvando..."
+                : "Salvar alterações"}
             </Button>
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/app")}
-              disabled={isSubmitting || createGameMutation.isPending}
+              onClick={() => navigate(`/app/games/${gameId}`)}
+              disabled={isSubmitting || updateGameMutation.isPending}
             >
               Cancelar
             </Button>

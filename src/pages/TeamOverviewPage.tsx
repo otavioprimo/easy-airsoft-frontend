@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
+import { useTeamGamesQuery } from "@/hooks/queries/useGamesQueries";
 import { useTeamMembersQuery, useTeamQuery } from "@/hooks/queries/useTeamsQueries";
 import type { TeamRole } from "@/types/teams";
 
@@ -14,6 +15,12 @@ export default function TeamOverviewPage() {
   const teamQuery = useTeamQuery(teamId);
   const membersQuery = useTeamMembersQuery(teamId);
   const fieldsQuery = useTeamFieldsQuery(teamId);
+  const gamesQuery = useTeamGamesQuery(teamId);
+
+  const formatDate = new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
 
   const currentUserMembership = (membersQuery.data ?? []).find((member) => {
     return member.userId === user?.id;
@@ -49,6 +56,7 @@ export default function TeamOverviewPage() {
 
   const team = teamQuery.data;
   const fields = fieldsQuery.data ?? [];
+  const games = gamesQuery.data ?? [];
 
   return (
     <AppShell>
@@ -106,6 +114,60 @@ export default function TeamOverviewPage() {
           <p className="text-sm text-gray-700">
             {team.description || "Sem descrição cadastrada."}
           </p>
+        </section>
+
+        <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-primary">Jogos do time</h2>
+            <div className="flex items-center gap-2">
+              <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-600">
+                {gamesQuery.isLoading ? "..." : games.length} jogo(s)
+              </span>
+              {canManageTeam && (
+                <Link to={`/app/games/new?teamId=${team.id}`}>
+                  <Button variant="outline" size="sm">Criar jogo</Button>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {gamesQuery.isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : games.length === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+              Este time ainda não possui jogos cadastrados.
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {games.map((game) => (
+                <div
+                  key={game.id}
+                  className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-4"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-gray-900">{game.title}</p>
+                    <p className="text-sm text-gray-600">
+                      {formatDate.format(new Date(game.datetime))}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link to={`/app/games/${game.id}`}>
+                      <Button variant="outline" size="sm">Detalhes</Button>
+                    </Link>
+                    {canManageTeam && (
+                      <Link to={`/app/games/${game.id}/edit`}>
+                        <Button variant="outline" size="sm">Editar</Button>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">

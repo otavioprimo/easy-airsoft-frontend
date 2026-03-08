@@ -15,10 +15,20 @@ export type GameItem = {
   confirmedCount?: number | null;
   interestedCount?: number | null;
   price?: number | string | null;
+  externalTicketUrl?: string | null;
   city?: string | null;
   state?: string | null;
   status?: string | null;
   myParticipationStatus?: ParticipationStatus | null;
+  participants?: Array<{
+    id: string;
+    status: ParticipationStatus;
+    user?: {
+      id: string;
+      name: string;
+      profilePhoto?: string | null;
+    } | null;
+  }>;
   team?: {
     id: string;
     name: string;
@@ -30,6 +40,10 @@ export type GameItem = {
     state?: string | null;
     latitude?: number | string | null;
     longitude?: number | string | null;
+    photos?: Array<{
+      id: string;
+      photoUrl: string;
+    }>;
   } | null;
 };
 
@@ -49,7 +63,17 @@ export type CreateGamePayload = {
   title: string;
   description?: string;
   datetime: string;
-  maxPlayers: number;
+  maxPlayers?: number;
+  price?: number;
+  externalTicketUrl?: string;
+};
+
+export type UpdateGamePayload = {
+  fieldId?: string;
+  title?: string;
+  description?: string;
+  datetime?: string;
+  maxPlayers?: number;
   price?: number;
   externalTicketUrl?: string;
 };

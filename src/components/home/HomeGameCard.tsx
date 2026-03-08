@@ -1,5 +1,7 @@
 import { HomeGameActions } from "./HomeGameActions";
 import { HomeGameMeta } from "./HomeGameMeta";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import type { GameItem, ParticipationStatus } from "@/types/games";
 
 type HomeGameCardProps = {
@@ -9,6 +11,16 @@ type HomeGameCardProps = {
   formatDate: Intl.DateTimeFormat;
   onUpdateParticipation: (gameId: string, status: ParticipationStatus) => void;
 };
+
+function formatGameDate(dateValue: string, formatter: Intl.DateTimeFormat) {
+  const parsedDate = new Date(dateValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Data não informada";
+  }
+
+  return formatter.format(parsedDate);
+}
 
 function toRadians(value: number) {
   return (value * Math.PI) / 180;
@@ -66,18 +78,19 @@ export function HomeGameCard({
   return (
     <div className="space-y-4 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
-        <div>
+        <div className="space-y-2">
           <h2 className="text-xl font-semibold text-primary">{game.title}</h2>
           <p className="text-sm text-gray-600">
-            {formatDate.format(new Date(game.datetime))}
+            {formatGameDate(game.datetime, formatDate)}
           </p>
           {game.description && (
             <p className="text-sm text-gray-700 mt-2">{game.description}</p>
           )}
         </div>
-        <span className="text-xs font-semibold bg-gray-100 text-gray-700 px-2 py-1 rounded-md">
-          {game.status ?? "ACTIVE"}
-        </span>
+
+        <Button asChild size="sm" variant="outline" className="shrink-0">
+          <Link to={`/app/games/${game.id}`}>Ver detalhes</Link>
+        </Button>
       </div>
 
       <HomeGameMeta

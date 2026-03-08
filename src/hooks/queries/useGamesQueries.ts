@@ -6,6 +6,7 @@ import type {
   GameItem,
   ListGamesResponse,
   ParticipationStatus,
+  UpdateGamePayload,
 } from "@/types/games";
 
 type ApiSuccessResponse<T> = {
@@ -25,7 +26,7 @@ export function useGamesQuery(
         {
           params: {
             page: 1,
-            limit: 20,
+            limit: 15,
             radiusKm: filters.radiusKm,
             ...(location ? { latitude: location.latitude } : {}),
             ...(location ? { longitude: location.longitude } : {}),
@@ -34,6 +35,60 @@ export function useGamesQuery(
               ? { state: filters.state.trim().toUpperCase() }
               : {}),
             ...(filters.date ? { date: filters.date } : {}),
+          },
+        },
+      );
+
+      return response.data.data.items;
+    },
+  });
+}
+
+export function useMyParticipationGamesQuery() {
+  return useQuery({
+    queryKey: ["games", "my-participation"],
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<ListGamesResponse>>(
+        "/games/secure",
+        {
+          params: {
+            page: 1,
+            limit: 50,
+          },
+        },
+      );
+
+      return response.data.data.items;
+    },
+  });
+}
+
+export function useGameDetailsQuery(gameId: string) {
+  return useQuery({
+    queryKey: ["games", "details", gameId],
+    enabled: Boolean(gameId),
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<GameItem>>(
+        `/games/${gameId}/secure`,
+      );
+
+      return response.data.data;
+    },
+  });
+}
+
+export function useTeamGamesQuery(teamId: string) {
+  return useQuery({
+    queryKey: ["games", "team", teamId],
+    enabled: Boolean(teamId),
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<ListGamesResponse>>(
+        "/games/secure",
+        {
+          params: {
+            page: 1,
+            limit: 50,
+            teamId,
           },
         },
       );
@@ -70,6 +125,23 @@ export function useCreateGameMutation() {
   return useMutation({
     mutationFn: async (payload: CreateGamePayload) => {
       const response = await api.post<ApiSuccessResponse<GameItem>>("/games", payload);
+      return response.data.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+}
+
+export function useUpdateGameMutation(gameId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: UpdateGamePayload) => {
+      const response = await api.patch<ApiSuccessResponse<GameItem>>(
+        `/games/${gameId}`,
+        payload,
+      );
       return response.data.data;
     },
     onSuccess: async () => {

@@ -6,6 +6,7 @@ import {
   HomeHeader,
   HomeJoinTeamCard,
   HomeMyTeams,
+  HomeParticipationLists,
 } from "@/components/home";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +15,7 @@ import {
   ensureGameList,
   getQueryErrorMessage,
   useGamesQuery,
+  useMyParticipationGamesQuery,
   useUpdateParticipationMutation,
 } from "@/hooks/queries/useGamesQueries";
 import {
@@ -53,6 +55,7 @@ export default function HomePage() {
   );
 
   const gamesQuery = useGamesQuery(appliedFilters, userLocation);
+  const myParticipationGamesQuery = useMyParticipationGamesQuery();
   const statesQuery = useIbgeStatesQuery();
   const citiesQuery = useIbgeCitiesByStateQuery(filters.state);
   const myTeamsQuery = useMyTeamsQuery();
@@ -63,6 +66,7 @@ export default function HomePage() {
 
   const isLoading = gamesQuery.isLoading;
   const games = ensureGameList(gamesQuery.data);
+  const myParticipationGames = ensureGameList(myParticipationGamesQuery.data);
 
   const handleUpdateParticipation = (
     gameId: string,
@@ -212,6 +216,7 @@ export default function HomePage() {
           <div className="space-y-5">
             <HomeFilter
               filters={filters}
+              hasUserLocation={Boolean(userLocation)}
               states={statesQuery.data ?? []}
               cities={citiesQuery.data ?? []}
               isLoadingStates={statesQuery.isLoading}
@@ -258,6 +263,12 @@ export default function HomePage() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+            <HomeParticipationLists
+              games={myParticipationGames}
+              isLoading={myParticipationGamesQuery.isLoading}
+              formatDate={formatDate}
+            />
+
             <HomeMyTeams
               teams={myTeamsQuery.data ?? []}
               isLoading={myTeamsQuery.isLoading}

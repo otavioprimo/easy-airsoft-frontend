@@ -4,7 +4,9 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ConfirmEmailPage from "@/pages/ConfirmEmailPage";
 import CreateGamePage from "@/pages/CreateGamePage";
 import EditFieldPage from "@/pages/EditFieldPage";
+import EditGamePage from "@/pages/EditGamePage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
+import GameDetailsPage from "@/pages/GameDetailsPage";
 import HomePage from "@/pages/HomePage";
 import InviteTeamPage from "@/pages/InviteTeamPage";
 import LoginPage from "@/pages/LoginPage";
@@ -48,6 +50,22 @@ function App() {
         element={
           <ProtectedRoute>
             <CreateGamePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/games/:gameId"
+        element={
+          <ProtectedRoute>
+            <GameDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/games/:gameId/edit"
+        element={
+          <ProtectedRoute>
+            <EditGamePage />
           </ProtectedRoute>
         }
       />

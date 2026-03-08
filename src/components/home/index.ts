@@ -6,3 +6,4 @@ export { HomeGameActions } from "./HomeGameActions";
 export { HomeGameMeta } from "./HomeGameMeta";
 export { HomeMyTeams } from "./HomeMyTeams";
 export { HomeJoinTeamCard } from "./HomeJoinTeamCard";
+export { HomeParticipationLists } from "./HomeParticipationLists";

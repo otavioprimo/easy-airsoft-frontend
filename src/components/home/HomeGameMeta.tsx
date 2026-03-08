@@ -7,7 +7,7 @@ type HomeGameMetaProps = {
   price?: number | string | null;
   confirmedCount?: number | null;
   interestedCount?: number | null;
-  maxPlayers: number;
+  maxPlayers?: number | null;
 };
 
 export function HomeGameMeta({
@@ -47,7 +47,7 @@ export function HomeGameMeta({
       </p>
       <p>
         <span className="font-medium">Confirmados:</span> {confirmedCount ?? 0}/
-        {maxPlayers}
+        {maxPlayers && maxPlayers > 0 ? maxPlayers : "Sem limite"}
       </p>
       <p>
         <span className="font-medium">Interessados:</span>{" "}
