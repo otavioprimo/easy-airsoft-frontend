@@ -26,6 +26,8 @@ export default function TeamOverviewPage() {
     return member.userId === user?.id;
   });
 
+  const fallbackLink = user ? "/app" : "/login";
+
   const currentUserRole = currentUserMembership?.role as TeamRole | undefined;
   const canManageTeam = currentUserRole === "OWNER" || currentUserRole === "ADMIN";
 
@@ -46,7 +48,7 @@ export default function TeamOverviewPage() {
       <AppShell>
         <div className="mx-auto max-w-3xl space-y-3 rounded-2xl border border-red-300 bg-red-50 p-4 text-red-800">
           <p>Não foi possível carregar o time.</p>
-          <Link to="/app">
+          <Link to={fallbackLink}>
             <Button variant="outline">Voltar para Home</Button>
           </Link>
         </div>
@@ -140,7 +142,7 @@ export default function TeamOverviewPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Link to={`/app/games/${game.id}`}>
+                    <Link to={`/games/${game.id}`}>
                       <Button variant="outline" size="sm">Detalhes</Button>
                     </Link>
                     {canManageTeam && (

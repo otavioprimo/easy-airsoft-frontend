@@ -1,10 +1,19 @@
 import { Fragment, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { HomeGameActions } from "@/components/home/HomeGameActions";
 import { HomeGameMeta } from "@/components/home/HomeGameMeta";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 import {
   getQueryErrorMessage,
   useGameDetailsQuery,
@@ -60,14 +69,23 @@ function renderDescriptionWithLinks(text: string) {
 
 export default function GameDetailsPage() {
   const { gameId = "" } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
+  const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const gameQuery = useGameDetailsQuery(gameId);
   const updateParticipationMutation = useUpdateParticipationMutation();
+  const fallbackLink = isAuthenticated ? "/app" : "/login";
 
   const handleUpdateParticipation = (
     nextGameId: string,
     nextStatus: "CONFIRMED" | "INTERESTED" | "CANCELLED",
   ) => {
+    if (!isAuthenticated) {
+      setIsAuthPromptOpen(true);
+      return;
+    }
+
     updateParticipationMutation.mutate({
       gameId: nextGameId,
       status: nextStatus,
@@ -134,7 +152,7 @@ export default function GameDetailsPage() {
       <AppShell>
         <div className="mx-auto max-w-4xl space-y-4 rounded-3xl border border-red-300 bg-red-50 p-6 text-red-800">
           <p>{errorMessage}</p>
-          <Link to="/app">
+          <Link to={fallbackLink}>
             <Button variant="outline">Voltar para Home</Button>
           </Link>
         </div>
@@ -169,7 +187,7 @@ export default function GameDetailsPage() {
               </p>
             </div>
 
-            <Link to="/app">
+            <Link to={fallbackLink}>
               <Button variant="outline">Voltar para Home</Button>
             </Link>
           </div>
@@ -209,7 +227,7 @@ export default function GameDetailsPage() {
           <div className="pt-1">
             <HomeGameActions
               gameId={game.id}
-              currentStatus={game.myParticipationStatus ?? null}
+              currentStatus={isAuthenticated ? (game.myParticipationStatus ?? null) : null}
               isActionLoading={isActionLoading}
               onUpdateParticipation={handleUpdateParticipation}
             />
@@ -258,13 +276,29 @@ export default function GameDetailsPage() {
 
         <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
           <div>
-            <h2 className="text-lg font-semibold text-primary">Confirmados no jogo</h2>
+            <h2 className="text-lg font-semibold text-primary">Jogadores Confirmados no jogo</h2>
             <p className="text-sm text-gray-600">
               Jogadores com presença confirmada.
             </p>
           </div>
 
-          {confirmedParticipants.length === 0 ? (
+          {!isAuthenticated ? (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-gray-700">
+              <p>
+                Para ver os jogadores confirmados no jogo, você precisa entrar ou se cadastrar.
+              </p>
+              <div className="mt-3">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    navigate("/login");
+                  }}
+                >
+                  Entrar ou cadastrar
+                </Button>
+              </div>
+            </div>
+          ) : confirmedParticipants.length === 0 ? (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
               Ainda não há jogadores confirmados.
             </div>
@@ -299,6 +333,37 @@ export default function GameDetailsPage() {
           )}
         </section>
       </div>
+
+      <Dialog open={isAuthPromptOpen} onOpenChange={setIsAuthPromptOpen}>
+        <DialogContent className="border border-gray-200 bg-white shadow-xl">
+          <DialogHeader>
+            <DialogTitle>Entre para continuar</DialogTitle>
+            <DialogDescription>
+              Para confirmar presença, demonstrar interesse ou interagir neste jogo, você precisa entrar ou criar sua conta.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsAuthPromptOpen(false);
+              }}
+            >
+              Agora não
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                setIsAuthPromptOpen(false);
+                navigate("/login");
+              }}
+            >
+              Entrar ou cadastrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {selectedPhotoUrl && (
         <div

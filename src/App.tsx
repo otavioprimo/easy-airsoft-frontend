@@ -56,12 +56,9 @@ function App() {
       />
       <Route
         path="/app/games/:gameId"
-        element={
-          <ProtectedRoute>
-            <GameDetailsPage />
-          </ProtectedRoute>
-        }
+        element={<GameDetailsPage />}
       />
+      <Route path="/games/:gameId" element={<GameDetailsPage />} />
       <Route
         path="/app/games/:gameId/edit"
         element={

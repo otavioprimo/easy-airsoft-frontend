@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 import type { LocationDateFilters } from "@/types/filters";
 import type {
   CreateGamePayload,
@@ -64,12 +65,14 @@ export function useMyParticipationGamesQuery() {
 }
 
 export function useGameDetailsQuery(gameId: string) {
+  const { isAuthenticated } = useAuth();
+
   return useQuery({
-    queryKey: ["games", "details", gameId],
+    queryKey: ["games", "details", gameId, isAuthenticated ? "secure" : "public"],
     enabled: Boolean(gameId),
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<GameItem>>(
-        `/games/${gameId}/secure`,
+        isAuthenticated ? `/games/${gameId}/secure` : `/games/${gameId}`,
       );
 
       return response.data.data;
