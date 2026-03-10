@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
   Menu,
+  Search,
   ShieldUser,
   Swords,
   Users,
@@ -53,6 +54,12 @@ export function AppShell({ children }: AppShellProps) {
         to: "/app/teams",
         icon: Users,
         isActive: (pathname) => pathname === "/app/teams",
+      },
+      {
+        label: "Buscar times",
+        to: "/app/teams/search",
+        icon: Search,
+        isActive: (pathname) => pathname === "/app/teams/search",
       },
       {
         label: "Criar jogo",

@@ -47,6 +47,16 @@ export type TeamFollowing = {
   team: Team;
 };
 
+export type ListTeamsResponse = {
+  items: Team[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 export type CreateTeamPayload = {
   name: string;
   description?: string;

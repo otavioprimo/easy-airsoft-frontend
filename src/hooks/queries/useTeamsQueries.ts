@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { Team, TeamFollowing, TeamMember } from "@/types/teams";
+import type {
+  ListTeamsResponse,
+  Team,
+  TeamFollowing,
+  TeamMember,
+} from "@/types/teams";
 
 type ApiSuccessResponse<T> = {
   success: boolean;
@@ -59,5 +64,33 @@ export function useFollowingTeamsQuery() {
       return response.data.data;
     },
     enabled: isAuthenticated,
+  });
+}
+
+export function useSearchTeamsQuery(filters: {
+  name: string;
+  city: string;
+  state: string;
+}) {
+  return useQuery({
+    queryKey: ["teams", "search", filters],
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<ListTeamsResponse>>(
+        "/teams",
+        {
+          params: {
+            page: 1,
+            limit: 30,
+            ...(filters.name.trim() ? { name: filters.name.trim() } : {}),
+            ...(filters.city.trim() ? { city: filters.city.trim() } : {}),
+            ...(filters.state.trim()
+              ? { state: filters.state.trim().toUpperCase() }
+              : {}),
+          },
+        },
+      );
+
+      return response.data.data;
+    },
   });
 }

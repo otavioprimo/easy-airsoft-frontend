@@ -23,6 +23,10 @@ export default function MyTeamsPage() {
             <Button asChild>
               <Link to="/app/teams/new">Criar time</Link>
             </Button>
+
+            <Button asChild variant="outline">
+              <Link to="/app/teams/search">Buscar times</Link>
+            </Button>
           </div>
         </header>
 

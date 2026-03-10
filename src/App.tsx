@@ -16,6 +16,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import TeamDetailsPage from "@/pages/TeamDetailsPage";
 import TeamOverviewPage from "@/pages/TeamOverviewPage";
+import SearchTeamsPage from "@/pages/SearchTeamsPage";
 
 function App() {
   const { isLoading } = useAuth();
@@ -80,6 +81,14 @@ function App() {
         element={
           <ProtectedRoute>
             <MyTeamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/teams/search"
+        element={
+          <ProtectedRoute>
+            <SearchTeamsPage />
           </ProtectedRoute>
         }
       />
