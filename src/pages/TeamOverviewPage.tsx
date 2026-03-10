@@ -5,7 +5,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
 import { useTeamGamesQuery } from "@/hooks/queries/useGamesQueries";
-import { useTeamMembersQuery, useTeamQuery } from "@/hooks/queries/useTeamsQueries";
+import {
+  useFollowingTeamsQuery,
+  useTeamMembersQuery,
+  useTeamQuery,
+} from "@/hooks/queries/useTeamsQueries";
+import {
+  useFollowTeamMutation,
+  useUnfollowTeamMutation,
+} from "@/hooks/queries/useTeamsMutations";
 import type { TeamRole } from "@/types/teams";
 
 export default function TeamOverviewPage() {
@@ -16,6 +24,9 @@ export default function TeamOverviewPage() {
   const membersQuery = useTeamMembersQuery(teamId);
   const fieldsQuery = useTeamFieldsQuery(teamId);
   const gamesQuery = useTeamGamesQuery(teamId);
+  const followingTeamsQuery = useFollowingTeamsQuery();
+  const followTeamMutation = useFollowTeamMutation(teamId);
+  const unfollowTeamMutation = useUnfollowTeamMutation(teamId);
 
   const formatDate = new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
@@ -30,6 +41,11 @@ export default function TeamOverviewPage() {
 
   const currentUserRole = currentUserMembership?.role as TeamRole | undefined;
   const canManageTeam = currentUserRole === "OWNER" || currentUserRole === "ADMIN";
+  const isFollowing = (followingTeamsQuery.data ?? []).some(
+    (following) => following.teamId === teamId,
+  );
+  const isFollowActionPending =
+    followTeamMutation.isPending || unfollowTeamMutation.isPending;
 
   if (teamQuery.isLoading) {
     return (
@@ -89,6 +105,31 @@ export default function TeamOverviewPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
+              {user ? (
+                <Button
+                  variant={isFollowing ? "outline" : "default"}
+                  disabled={isFollowActionPending}
+                  onClick={() => {
+                    if (isFollowing) {
+                      unfollowTeamMutation.mutate();
+                      return;
+                    }
+
+                    followTeamMutation.mutate();
+                  }}
+                >
+                  {isFollowActionPending
+                    ? "Salvando..."
+                    : isFollowing
+                      ? "Deixar de seguir"
+                      : "Seguir time"}
+                </Button>
+              ) : (
+                <Link to="/login">
+                  <Button variant="outline">Entrar para seguir</Button>
+                </Link>
+              )}
+
               {canManageTeam && (
                 <Link to={`/app/games/new?teamId=${team.id}`}>
                   <Button variant="outline">Criar jogo</Button>

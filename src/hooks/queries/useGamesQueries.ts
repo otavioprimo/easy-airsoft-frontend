@@ -36,6 +36,7 @@ export function useGamesQuery(
               ? { state: filters.state.trim().toUpperCase() }
               : {}),
             ...(filters.date ? { date: filters.date } : {}),
+            ...(filters.followingOnly ? { followingOnly: true } : {}),
           },
         },
       );

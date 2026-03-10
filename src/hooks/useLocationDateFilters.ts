@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { parseAsString, useQueryStates } from "nuqs";
+import { parseAsBoolean, parseAsString, useQueryStates } from "nuqs";
 import {
   EMPTY_LOCATION_DATE_FILTERS,
   RADIUS_FILTER_OPTIONS,
@@ -17,6 +17,7 @@ function normalizeFilters(filters: LocationDateFilters): LocationDateFilters {
     state: filters.state.trim().toUpperCase(),
     date: filters.date,
     radiusKm: normalizedRadius,
+    followingOnly: Boolean(filters.followingOnly),
   };
 }
 
@@ -27,6 +28,7 @@ export function useLocationDateFilters() {
       state: parseAsString.withDefault(""),
       date: parseAsString.withDefault(""),
       radiusKm: parseAsString.withDefault("100"),
+      followingOnly: parseAsBoolean.withDefault(false),
     },
     {
       history: "replace",
@@ -40,6 +42,7 @@ export function useLocationDateFilters() {
       state: queryFilters.state,
       date: queryFilters.date,
       radiusKm: Number(queryFilters.radiusKm),
+      followingOnly: queryFilters.followingOnly,
     });
   }, [queryFilters]);
 
@@ -64,6 +67,7 @@ export function useLocationDateFilters() {
       state: normalized.state,
       date: normalized.date,
       radiusKm: String(normalized.radiusKm),
+      followingOnly: normalized.followingOnly,
     });
     return normalized;
   };
@@ -76,6 +80,7 @@ export function useLocationDateFilters() {
       state: EMPTY_LOCATION_DATE_FILTERS.state,
       date: EMPTY_LOCATION_DATE_FILTERS.date,
       radiusKm: String(EMPTY_LOCATION_DATE_FILTERS.radiusKm),
+      followingOnly: EMPTY_LOCATION_DATE_FILTERS.followingOnly,
     });
     return EMPTY_LOCATION_DATE_FILTERS;
   };

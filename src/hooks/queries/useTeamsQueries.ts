@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { Team, TeamMember } from "@/types/teams";
+import type { Team, TeamFollowing, TeamMember } from "@/types/teams";
 
 type ApiSuccessResponse<T> = {
   success: boolean;
@@ -44,5 +44,20 @@ export function useTeamMembersQuery(teamId: string) {
       return response.data.data;
     },
     enabled: Boolean(teamId),
+  });
+}
+
+export function useFollowingTeamsQuery() {
+  const { user, isAuthenticated } = useAuth();
+
+  return useQuery({
+    queryKey: ["followers", "teams", user?.id],
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<TeamFollowing[]>>(
+        "/followers/teams",
+      );
+      return response.data.data;
+    },
+    enabled: isAuthenticated,
   });
 }

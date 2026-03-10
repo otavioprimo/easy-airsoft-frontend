@@ -20,6 +20,7 @@ import {
   useIbgeCitiesByStateQuery,
   useIbgeStatesQuery,
 } from "@/hooks/queries/useIbgeQueries";
+import { useFollowingTeamsQuery } from "@/hooks/queries/useTeamsQueries";
 import { useJoinTeamByCodeMutation } from "@/hooks/queries/useTeamsMutations";
 import {
   clearPendingTeamInviteCode,
@@ -56,6 +57,7 @@ export default function HomePage() {
   const citiesQuery = useIbgeCitiesByStateQuery(filters.state);
   const joinTeamByCodeMutation = useJoinTeamByCodeMutation();
   const updateParticipationMutation = useUpdateParticipationMutation();
+  const followingTeamsQuery = useFollowingTeamsQuery();
 
   const pendingInviteCode = getPendingTeamInviteCode();
 
@@ -199,6 +201,7 @@ export default function HomePage() {
           <div className="space-y-5">
             <HomeFilter
               filters={filters}
+              isAuthenticated={Boolean(user)}
               hasUserLocation={Boolean(userLocation)}
               states={statesQuery.data ?? []}
               cities={citiesQuery.data ?? []}
@@ -213,6 +216,14 @@ export default function HomePage() {
               }}
               onChange={setFilters}
             />
+
+            {appliedFilters.followingOnly &&
+              !followingTeamsQuery.isLoading &&
+              (followingTeamsQuery.data?.length ?? 0) === 0 && (
+                <div className="rounded-2xl border border-amber-300 bg-amber-50/80 px-4 py-3 text-amber-900">
+                  Você ainda não segue nenhum time. Acesse o perfil de um time para começar a seguir.
+                </div>
+              )}
 
             {locationErrorMessage && (
               <div className="rounded-2xl border border-amber-300 bg-amber-50/80 px-4 py-3 text-amber-900">

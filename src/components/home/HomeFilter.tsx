@@ -9,6 +9,7 @@ import type { StateOption } from "@/types/ibge";
 
 type HomeFilterProps = {
   filters: LocationDateFilters;
+  isAuthenticated: boolean;
   hasUserLocation: boolean;
   states: StateOption[];
   cities: string[];
@@ -22,6 +23,7 @@ type HomeFilterProps = {
 
 export function HomeFilter({
   filters,
+  isAuthenticated,
   hasUserLocation,
   states,
   cities,
@@ -148,6 +150,25 @@ export function HomeFilter({
             )}
           </div>
         </div>
+
+        {isAuthenticated && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <label className="flex cursor-pointer items-center gap-2.5 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                checked={filters.followingOnly}
+                onChange={(event) =>
+                  onChange({
+                    ...filters,
+                    followingOnly: event.target.checked,
+                  })
+                }
+              />
+              Mostrar apenas jogos dos times que sigo
+            </label>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:justify-end">
           <Button

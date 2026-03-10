@@ -40,6 +40,13 @@ export type TeamMember = {
   user?: TeamMemberUser | null;
 };
 
+export type TeamFollowing = {
+  teamId: string;
+  userId: string;
+  createdAt?: string | null;
+  team: Team;
+};
+
 export type CreateTeamPayload = {
   name: string;
   description?: string;

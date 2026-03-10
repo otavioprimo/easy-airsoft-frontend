@@ -135,3 +135,39 @@ export function useRemoveTeamMemberMutation(teamId: string) {
     },
   });
 }
+
+export function useFollowTeamMutation(teamId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post<ApiSuccessResponse<unknown>>(
+        `/followers/teams/${teamId}`,
+      );
+      return response.data.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["followers", "teams"] });
+      await queryClient.invalidateQueries({ queryKey: ["teams", teamId] });
+      await queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+}
+
+export function useUnfollowTeamMutation(teamId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.delete<ApiSuccessResponse<unknown>>(
+        `/followers/teams/${teamId}`,
+      );
+      return response.data.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["followers", "teams"] });
+      await queryClient.invalidateQueries({ queryKey: ["teams", teamId] });
+      await queryClient.invalidateQueries({ queryKey: ["games"] });
+    },
+  });
+}
