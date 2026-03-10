@@ -67,20 +67,20 @@ export function useFollowingTeamsQuery() {
   });
 }
 
-export function useSearchTeamsQuery(filters: {
-  name: string;
-  city: string;
-  state: string;
-}) {
+export function useSearchTeamsQuery(
+  filters: { name: string; city: string; state: string },
+  page: number = 1,
+  limit: number = 20,
+) {
   return useQuery({
-    queryKey: ["teams", "search", filters],
+    queryKey: ["teams", "search", filters, page],
     queryFn: async () => {
       const response = await api.get<ApiSuccessResponse<ListTeamsResponse>>(
         "/teams",
         {
           params: {
-            page: 1,
-            limit: 30,
+            page,
+            limit,
             ...(filters.name.trim() ? { name: filters.name.trim() } : {}),
             ...(filters.city.trim() ? { city: filters.city.trim() } : {}),
             ...(filters.state.trim()

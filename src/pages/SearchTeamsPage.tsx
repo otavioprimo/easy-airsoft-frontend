@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchSelect } from "@/components/ui/search-select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   useIbgeCitiesByStateQuery,
   useIbgeStatesQuery,
@@ -26,13 +27,15 @@ const EMPTY_FILTERS: TeamSearchFilters = {
 export default function SearchTeamsPage() {
   const [filters, setFilters] = useState<TeamSearchFilters>(EMPTY_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<TeamSearchFilters>(EMPTY_FILTERS);
+  const [page, setPage] = useState(1);
 
   const statesQuery = useIbgeStatesQuery();
   const citiesQuery = useIbgeCitiesByStateQuery(filters.state);
-  const teamsQuery = useSearchTeamsQuery(appliedFilters);
+  const teamsQuery = useSearchTeamsQuery(appliedFilters, page);
 
   const teams = teamsQuery.data?.items ?? [];
   const total = teamsQuery.data?.pagination.total ?? 0;
+  const totalPages = teamsQuery.data?.pagination.totalPages ?? 1;
 
   const hasActiveFilters = useMemo(() => {
     return Boolean(
@@ -140,6 +143,7 @@ export default function SearchTeamsPage() {
               onClick={() => {
                 setFilters(EMPTY_FILTERS);
                 setAppliedFilters(EMPTY_FILTERS);
+                setPage(1);
               }}
             >
               Limpar
@@ -147,6 +151,7 @@ export default function SearchTeamsPage() {
             <Button
               type="button"
               onClick={() => {
+                setPage(1);
                 setAppliedFilters({
                   name: filters.name.trim(),
                   city: filters.city.trim(),
@@ -215,6 +220,36 @@ export default function SearchTeamsPage() {
                   </span>
                 </Link>
               ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page <= 1 || teamsQuery.isLoading}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                Anterior
+              </Button>
+
+              <span className="text-sm text-gray-600">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages || teamsQuery.isLoading}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Próxima
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
             </div>
           )}
         </section>
