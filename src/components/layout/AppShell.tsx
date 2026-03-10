@@ -73,13 +73,13 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-neutral-light">
-      <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
           <Link to="/app" className="flex items-center gap-2">
             <div className="rounded-lg bg-primary px-2 py-1 text-sm font-bold text-white shadow-sm">
               EA
             </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary/70">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/70">
               Easy Airsoft
             </p>
           </Link>
@@ -107,8 +107,8 @@ export function AppShell({ children }: AppShellProps) {
             aria-label="Fechar menu"
           />
 
-          <aside className="relative z-10 h-full w-[88%] max-w-xs border-r border-primary/20 bg-white p-4 shadow-2xl">
-            <div className="mb-4 rounded-2xl border border-primary/20 bg-white p-3 shadow-sm">
+          <aside className="relative z-10 flex h-full w-[88%] max-w-xs flex-col border-r border-primary/20 bg-white p-4 shadow-2xl">
+            <div className="mb-4 rounded-2xl border border-primary/20 bg-[linear-gradient(140deg,#ffffff_30%,#f4f8ff_100%)] p-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary/70">
                 Easy Airsoft
               </p>
@@ -125,10 +125,10 @@ export function AppShell({ children }: AppShellProps) {
                     to={item.to}
                     onClick={closeMobileMenu}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                      "group flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-semibold transition-all",
                       isActive
-                        ? "bg-primary text-white shadow-sm"
-                        : "text-gray-700 hover:bg-white hover:text-primary",
+                        ? "bg-primary text-white shadow-[0_8px_20px_rgba(10,31,68,0.22)]"
+                        : "text-gray-700 hover:bg-primary/5 hover:text-primary",
                     )}
                   >
                     <span
@@ -136,7 +136,7 @@ export function AppShell({ children }: AppShellProps) {
                         "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors",
                         isActive
                           ? "border-white/25 bg-white/15"
-                          : "border-gray-200 bg-white group-hover:border-primary/30 group-hover:bg-primary/5",
+                          : "border-slate-200 bg-white group-hover:border-primary/30 group-hover:bg-white",
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -147,13 +147,40 @@ export function AppShell({ children }: AppShellProps) {
               })}
             </nav>
 
+            <div className="mt-auto space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-center gap-3">
+                {user?.profilePhoto ? (
+                  <img
+                    src={user.profilePhoto}
+                    alt="Foto de perfil"
+                    className="h-10 w-10 rounded-full border border-gray-200 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
+                    {userInitial}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-900">
+                    {user?.name || "Usuário"}
+                  </p>
+                  <p className="truncate text-xs text-gray-600">{user?.email || ""}</p>
+                </div>
+              </div>
+
+              <Button type="button" variant="outline" className="w-full" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
+            </div>
+
           </aside>
         </div>
       )}
 
       <div className="mx-auto flex w-full max-w-7xl gap-6 px-4 py-4 sm:px-6 sm:py-6">
-        <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-72 shrink-0 flex-col rounded-3xl border border-primary/20 bg-gradient-to-b from-white to-primary/5 p-4 shadow-sm lg:flex">
-          <div className="mb-4 rounded-2xl border border-primary/20 bg-white/85 p-3 shadow-sm backdrop-blur">
+        <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-72 shrink-0 flex-col rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 shadow-[0_12px_28px_rgba(15,23,42,0.08)] lg:flex">
+          <div className="mb-4 rounded-2xl border border-primary/20 bg-[linear-gradient(140deg,#ffffff_30%,#f4f8ff_100%)] p-3 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary/70">
               Easy Airsoft
             </p>
@@ -169,10 +196,10 @@ export function AppShell({ children }: AppShellProps) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                    "group flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-semibold transition-all",
                     isActive
-                      ? "bg-primary text-white shadow-sm"
-                      : "text-gray-700 hover:bg-white hover:text-primary",
+                      ? "bg-primary text-white shadow-[0_8px_20px_rgba(10,31,68,0.22)]"
+                      : "text-gray-700 hover:bg-primary/5 hover:text-primary",
                   )}
                 >
                   <span
@@ -180,7 +207,7 @@ export function AppShell({ children }: AppShellProps) {
                       "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors",
                       isActive
                         ? "border-white/25 bg-white/15"
-                        : "border-gray-200 bg-white group-hover:border-primary/30 group-hover:bg-primary/5",
+                        : "border-slate-200 bg-white group-hover:border-primary/30 group-hover:bg-white",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -191,7 +218,7 @@ export function AppShell({ children }: AppShellProps) {
             })}
           </nav>
 
-          <div className="mt-auto space-y-3 rounded-2xl border border-gray-200 bg-white/85 p-3 shadow-sm">
+          <div className="mt-auto space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
             <div className="flex items-center gap-3">
               {user?.profilePhoto ? (
                 <img

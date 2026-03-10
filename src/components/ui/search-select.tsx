@@ -95,7 +95,7 @@ const SearchSelect = React.forwardRef<HTMLDivElement, SearchSelectProps>(
               role="combobox"
               aria-expanded={open}
               disabled={disabled}
-              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 text-neutral-700 font-normal"
+              className="flex h-11 w-full items-center justify-between rounded-[var(--radius-md)] border border-slate-300/85 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] ring-offset-background transition-colors disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
             >
               <span className="max-w-[calc(100%-32px)] overflow-hidden text-ellipsis">
                 {displayLabel}
@@ -110,11 +110,11 @@ const SearchSelect = React.forwardRef<HTMLDivElement, SearchSelectProps>(
                     <X className="h-4 w-4" />
                   </button>
                 )}
-                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50 text-neutral-500" />
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-neutral-400" />
               </div>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
+          <PopoverContent className="w-full rounded-[var(--radius-lg)] border border-slate-200 p-0 shadow-xl" align="start">
             <Command shouldFilter={!onSearch}>
               <CommandInput
                 placeholder={searchPlaceholder}

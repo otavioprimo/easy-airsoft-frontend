@@ -4,21 +4,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] text-sm font-semibold tracking-[0.01em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-white shadow-sm hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-md",
+          "bg-primary text-white shadow-[0_8px_20px_rgba(10,31,68,0.18)] hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-[0_10px_24px_rgba(10,31,68,0.24)]",
         outline:
-          "border-2 border-primary/40 text-primary hover:border-primary hover:bg-primary/5",
-        ghost: "text-primary hover:bg-primary/8",
-        accent: "bg-accent text-primary hover:-translate-y-0.5 hover:bg-accent/90",
+          "border border-primary/25 bg-white text-primary hover:border-primary/40 hover:bg-primary/5",
+        ghost: "text-primary hover:bg-primary/10",
+        accent: "bg-accent text-primary shadow-[0_8px_20px_rgba(37,207,99,0.22)] hover:-translate-y-0.5 hover:bg-accent/90",
       },
       size: {
-        default: "h-11 px-6 py-2",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-12 px-8 text-base",
+        default: "h-11 px-5 py-2",
+        sm: "h-9 px-3.5 text-xs",
+        lg: "h-12 px-7 text-base",
       },
     },
     defaultVariants: {

@@ -19,7 +19,7 @@ export function HomeJoinTeamCard({
   onSubmit,
 }: HomeJoinTeamCardProps) {
   return (
-    <div className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="space-y-3 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] sm:p-6">
       <div>
         <h2 className="text-lg font-semibold text-primary">Entrar em um time</h2>
         <p className="text-sm text-gray-600">
@@ -27,7 +27,7 @@ export function HomeJoinTeamCard({
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <Input
           value={inviteCode}
           onChange={(event) => {
@@ -35,9 +35,9 @@ export function HomeJoinTeamCard({
           }}
           placeholder="Ex.: A7K9P2QX"
           maxLength={12}
-          className="sm:max-w-xs"
+          className="w-full"
         />
-        <Button onClick={onSubmit} disabled={isSubmitting || !inviteCode.trim()}>
+        <Button className="w-full" onClick={onSubmit} disabled={isSubmitting || !inviteCode.trim()}>
           {isSubmitting ? "Entrando..." : "Entrar no time"}
         </Button>
       </div>

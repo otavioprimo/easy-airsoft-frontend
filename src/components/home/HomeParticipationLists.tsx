@@ -53,7 +53,7 @@ export function HomeParticipationLists({
   const activeLabel = activeTab === "CONFIRMED" ? "confirmou presença" : "tem interesse";
 
   return (
-    <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+    <section className="space-y-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.06)] sm:p-5">
       <div className="space-y-1">
         <h2 className="text-base font-semibold text-gray-900">Minha participação</h2>
         <p className="text-sm text-gray-600">
@@ -106,7 +106,7 @@ export function HomeParticipationLists({
               <Link
                 key={game.id}
                 to={`/app/games/${game.id}`}
-                className="block rounded-xl border border-gray-200 bg-gray-50 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
+                className="block rounded-xl border border-slate-200 bg-slate-50 p-3 transition-colors hover:border-primary/40 hover:bg-primary/5"
               >
                 <article>
                   <p className="truncate text-sm font-semibold text-gray-900">{game.title}</p>

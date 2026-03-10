@@ -33,10 +33,10 @@ export function HomeFilter({
   onChange,
 }: HomeFilterProps) {
   return (
-    <div className="space-y-4 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm md:p-5">
+    <div className="space-y-4 rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdff_100%)] p-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)] md:p-5">
       <div>
-        <h2 className="text-base font-semibold text-gray-900">Filtros de busca</h2>
-        <p className="text-sm text-gray-600">Refine os jogos por região e data.</p>
+        <h2 className="text-base font-bold text-gray-900">Filtros de busca</h2>
+        <p className="text-sm text-gray-600">Refine os jogos por região, data e distância.</p>
       </div>
 
       <div className="space-y-4">
@@ -149,7 +149,7 @@ export function HomeFilter({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+        <div className="flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
