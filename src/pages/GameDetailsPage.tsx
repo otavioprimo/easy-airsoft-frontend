@@ -1,4 +1,5 @@
 import { Fragment, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { HomeGameActions } from "@/components/home/HomeGameActions";
 import { HomeGameMeta } from "@/components/home/HomeGameMeta";
@@ -175,7 +176,40 @@ export default function GameDetailsPage() {
       "Não foi possível atualizar sua participação.",
     );
 
+  const ogImage = fieldPhotos[0]?.photoUrl;
+  const locationLabel =
+    city && state ? `${city}/${state}` : city || state || "";
+  const teamLabel = game.team?.name ? ` • ${game.team.name}` : "";
+  const gameDate = formatDate.format(new Date(game.datetime));
+  const metaDescription =
+    [
+      game.description?.slice(0, 120) ||
+        `Jogo de airsoft em ${locationLabel || "local a definir"}`,
+      gameDate,
+      locationLabel,
+    ]
+      .filter(Boolean)
+      .join(" — ") + teamLabel;
+
   return (
+    <>
+      <Helmet>
+        <title>{`${game.title} – Easy Airsoft`}</title>
+        <meta name="description" content={metaDescription} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={window.location.href} />
+        {/* Open Graph */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={`${game.title} – Easy Airsoft`} />
+        <meta property="og:description" content={metaDescription} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        <meta property="og:url" content={window.location.href} />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${game.title} – Easy Airsoft`} />
+        <meta name="twitter:description" content={metaDescription} />
+        {ogImage && <meta name="twitter:image" content={ogImage} />}
+      </Helmet>
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
         <section className="space-y-4 rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
@@ -400,5 +434,6 @@ export default function GameDetailsPage() {
         </div>
       )}
     </AppShell>
+    </>
   );
 }

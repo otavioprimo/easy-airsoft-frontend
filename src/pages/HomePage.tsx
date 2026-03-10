@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import {
   HomeFilter,
   HomeGameList,
@@ -182,6 +183,15 @@ export default function HomePage() {
     "";
 
   return (
+    <>
+      <Helmet>
+        <title>Easy Airsoft – Encontre jogos de airsoft perto de você</title>
+        <meta
+          name="description"
+          content="Descubra jogos de airsoft na sua região, veja campos, times e confirme sua presença – tudo em um só lugar."
+        />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
     <AppShell>
       <div className="space-y-6">
         <HomeHeader
@@ -275,5 +285,6 @@ export default function HomePage() {
         </div>
       </div>
     </AppShell>
+    </>
   );
 }

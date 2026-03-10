@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,14 @@ export default function SearchTeamsPage() {
 
   return (
     <AppShell>
+      <Helmet>
+        <title>Buscar times de airsoft – Easy Airsoft</title>
+        <meta
+          name="description"
+          content="Pesquise times de airsoft por nome, estado e cidade. Encontre seu próximo time no Easy Airsoft."
+        />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <div className="mx-auto max-w-5xl space-y-6">
         <header className="rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-bold text-primary">Buscar times</h1>

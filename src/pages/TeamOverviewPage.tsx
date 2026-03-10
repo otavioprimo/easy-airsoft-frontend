@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -76,7 +77,35 @@ export default function TeamOverviewPage() {
   const fields = fieldsQuery.data ?? [];
   const games = gamesQuery.data ?? [];
 
+  const locationLabel =
+    team.city && team.state ? `${team.city}/${team.state}` : "";
+  const metaDescription =
+    team.description?.slice(0, 150) ||
+    [
+      `Time de airsoft ${team.name}`,
+      locationLabel,
+      team.followersCount ? `${team.followersCount} seguidor(es)` : "",
+    ]
+      .filter(Boolean)
+      .join(" — ");
+
   return (
+    <>
+      <Helmet>
+        <title>{`${team.name} – Easy Airsoft`}</title>
+        <meta name="description" content={metaDescription} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={window.location.href} />
+        <meta property="og:type" content="profile" />
+        <meta property="og:title" content={`${team.name} – Easy Airsoft`} />
+        <meta property="og:description" content={metaDescription} />
+        {team.logoUrl && <meta property="og:image" content={team.logoUrl} />}
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={`${team.name} – Easy Airsoft`} />
+        <meta name="twitter:description" content={metaDescription} />
+        {team.logoUrl && <meta name="twitter:image" content={team.logoUrl} />}
+      </Helmet>
     <AppShell>
       <div className="mx-auto max-w-4xl space-y-6">
         <section className="rounded-3xl border border-primary/20 bg-white p-6 shadow-sm">
@@ -257,5 +286,6 @@ export default function TeamOverviewPage() {
         </section>
       </div>
     </AppShell>
+    </>
   );
 }

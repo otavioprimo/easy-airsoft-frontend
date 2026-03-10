@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Páginas públicas indexáveis
+Allow: /teams/
+Allow: /games/
+
+# Bloquear rotas autenticadas
+Disallow: /app/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /confirm-email
+Disallow: /invite/
+
+# Sitemap gerado dinamicamente pela API
+# Atualize a URL abaixo para o domínio de produção da sua API
+# Sitemap: https://SUA_API_URL/sitemap.xml
