@@ -20,3 +20,17 @@ export function useMyProfileQuery() {
     enabled: isAuthenticated,
   });
 }
+
+export function usePublicProfileByUsernameQuery(username: string | undefined) {
+  return useQuery({
+    queryKey: ["users", "profile", username],
+    queryFn: async () => {
+      const response = await api.get<ApiSuccessResponse<UserProfile>>(
+        `/users/profile/${username}`
+      );
+      return response.data.data;
+    },
+    enabled: !!username,
+  });
+}
+

@@ -12,6 +12,7 @@ import InviteTeamPage from "@/pages/InviteTeamPage";
 import LoginPage from "@/pages/LoginPage";
 import MyTeamsPage from "@/pages/MyTeamsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import PublicUserProfilePage from "@/pages/PublicUserProfilePage";
 import RegisterPage from "@/pages/RegisterPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import TeamDetailsPage from "@/pages/TeamDetailsPage";
@@ -132,6 +133,10 @@ function App() {
             <TeamDetailsPage />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/profile/:username"
+        element={<PublicUserProfilePage />}
       />
       <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
