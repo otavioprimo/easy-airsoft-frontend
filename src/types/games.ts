@@ -3,7 +3,8 @@ export type ParticipationStatus = "CONFIRMED" | "INTERESTED" | "CANCELLED";
 export type Filters = {
   city: string;
   state: string;
-  date: string;
+  dateFrom: string;
+  dateTo: string;
 };
 
 export type GameItem = {
@@ -26,6 +27,7 @@ export type GameItem = {
     user?: {
       id: string;
       name: string;
+      username?: string | null;
       profilePhoto?: string | null;
     } | null;
   }>;

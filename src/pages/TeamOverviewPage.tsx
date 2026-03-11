@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserLink } from "@/components/ui/UserLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
 import { useTeamGamesQuery } from "@/hooks/queries/useGamesQueries";
@@ -178,6 +179,73 @@ export default function TeamOverviewPage() {
           <p className="text-sm text-gray-700">
             {team.description || "Sem descrição cadastrada."}
           </p>
+        </section>
+
+        <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-primary">Membros</h2>
+            <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-600">
+              {membersQuery.isLoading ? "..." : (membersQuery.data ?? []).length} membro(s)
+            </span>
+          </div>
+
+          {membersQuery.isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-14 w-full" />
+              <Skeleton className="h-14 w-full" />
+              <Skeleton className="h-14 w-full" />
+            </div>
+          ) : (membersQuery.data ?? []).length === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+              Nenhum membro encontrado.
+            </div>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(membersQuery.data ?? []).map((member) => {
+                const memberName = member.user?.name || "Usuário";
+                const isOwner = member.role === "OWNER";
+                const isAdmin = member.role === "ADMIN";
+                const roleLabel = isOwner ? "Dono" : isAdmin ? "Admin" : "Membro";
+                const roleBadgeClass = isOwner
+                  ? "bg-primary/10 text-primary border-primary/20"
+                  : isAdmin
+                    ? "bg-amber-50 text-amber-700 border-amber-200"
+                    : "bg-gray-50 text-gray-600 border-gray-200";
+
+                return (
+                  <div
+                    key={member.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3"
+                  >
+                    {member.user?.profilePhoto ? (
+                      <img
+                        src={member.user.profilePhoto}
+                        alt={memberName}
+                        className="h-10 w-10 shrink-0 rounded-full border border-gray-200 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-sm font-semibold text-primary">
+                        {memberName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <UserLink username={member.user?.username}>
+                        {memberName}
+                      </UserLink>
+                      {member.user?.city && member.user?.state && (
+                        <p className="truncate text-xs text-gray-500">
+                          {member.user.city}/{member.user.state}
+                        </p>
+                      )}
+                    </div>
+                    <span className={`shrink-0 rounded-lg border px-2 py-0.5 text-xs font-medium ${roleBadgeClass}`}>
+                      {roleLabel}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">

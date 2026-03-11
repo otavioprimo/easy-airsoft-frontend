@@ -110,19 +110,37 @@ export function HomeFilter({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Data</label>
+            <label className="text-sm font-medium text-gray-700">Data inicial</label>
             <Input
               type="date"
-              value={filters.date}
+              value={filters.dateFrom}
+              max={filters.dateTo || undefined}
               onChange={(event) =>
                 onChange({
                   ...filters,
-                  date: event.target.value,
+                  dateFrom: event.target.value,
                 })
               }
             />
           </div>
 
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-700">Data final</label>
+            <Input
+              type="date"
+              value={filters.dateTo}
+              min={filters.dateFrom || undefined}
+              onChange={(event) =>
+                onChange({
+                  ...filters,
+                  dateTo: event.target.value,
+                })
+              }
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">Raio (km)</label>
             <SearchSelect

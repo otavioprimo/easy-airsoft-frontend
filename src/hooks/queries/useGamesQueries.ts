@@ -35,7 +35,8 @@ export function useGamesQuery(
             ...(filters.state.trim()
               ? { state: filters.state.trim().toUpperCase() }
               : {}),
-            ...(filters.date ? { date: filters.date } : {}),
+            ...(filters.dateFrom ? { dateFrom: filters.dateFrom } : {}),
+            ...(filters.dateTo ? { dateTo: filters.dateTo } : {}),
             ...(filters.followingOnly ? { followingOnly: true } : {}),
           },
         },

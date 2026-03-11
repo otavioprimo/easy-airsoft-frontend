@@ -5,6 +5,7 @@ import { HomeGameActions } from "@/components/home/HomeGameActions";
 import { HomeGameMeta } from "@/components/home/HomeGameMeta";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import { UserLink } from "@/components/ui/UserLink";
 import {
   Dialog,
   DialogContent,
@@ -340,6 +341,7 @@ export default function GameDetailsPage() {
             <div className="space-y-2">
               {confirmedParticipants.map((participant) => {
                 const participantName = participant.user?.name || "Jogador";
+                const participantUsername = participant.user?.username;
                 const participantPhoto = participant.user?.profilePhoto;
 
                 return (
@@ -359,7 +361,9 @@ export default function GameDetailsPage() {
                       </div>
                     )}
 
-                    <p className="text-sm font-medium text-gray-900">{participantName}</p>
+                    <UserLink username={participantUsername} className="text-sm">
+                      {participantName}
+                    </UserLink>
                   </div>
                 );
               })}

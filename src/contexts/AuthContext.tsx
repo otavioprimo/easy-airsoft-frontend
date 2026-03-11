@@ -72,7 +72,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (token) {
         try {
-          await api.get("/users/me");
+          const response = await api.get<{ success: boolean; data: User }>(
+            "/users/me",
+          );
+          const freshUser = response.data.data;
+
+          setUser((currentUser) => {
+            const nextUser = {
+              ...currentUser,
+              ...freshUser,
+            } as User;
+
+            localStorage.setItem("user", JSON.stringify(nextUser));
+            return nextUser;
+          });
         } catch {
           localStorage.removeItem("accessToken");
           localStorage.removeItem("refreshToken");

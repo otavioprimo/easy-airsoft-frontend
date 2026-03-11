@@ -329,7 +329,7 @@ export default function EditGamePage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate(`/app/games/${gameId}`)}
+              onClick={() => navigate(-1)}
               disabled={isSubmitting || updateGameMutation.isPending}
             >
               Cancelar

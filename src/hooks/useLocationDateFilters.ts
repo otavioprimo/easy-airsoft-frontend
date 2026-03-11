@@ -15,7 +15,8 @@ function normalizeFilters(filters: LocationDateFilters): LocationDateFilters {
   return {
     city: filters.city.trim(),
     state: filters.state.trim().toUpperCase(),
-    date: filters.date,
+    dateFrom: filters.dateFrom,
+    dateTo: filters.dateTo,
     radiusKm: normalizedRadius,
     followingOnly: Boolean(filters.followingOnly),
   };
@@ -26,7 +27,8 @@ export function useLocationDateFilters() {
     {
       city: parseAsString.withDefault(""),
       state: parseAsString.withDefault(""),
-      date: parseAsString.withDefault(""),
+      dateFrom: parseAsString.withDefault(""),
+      dateTo: parseAsString.withDefault(""),
       radiusKm: parseAsString.withDefault("100"),
       followingOnly: parseAsBoolean.withDefault(false),
     },
@@ -40,7 +42,8 @@ export function useLocationDateFilters() {
     return normalizeFilters({
       city: queryFilters.city,
       state: queryFilters.state,
-      date: queryFilters.date,
+      dateFrom: queryFilters.dateFrom,
+      dateTo: queryFilters.dateTo,
       radiusKm: Number(queryFilters.radiusKm),
       followingOnly: queryFilters.followingOnly,
     });
@@ -65,7 +68,8 @@ export function useLocationDateFilters() {
     void setQueryFilters({
       city: normalized.city,
       state: normalized.state,
-      date: normalized.date,
+      dateFrom: normalized.dateFrom,
+      dateTo: normalized.dateTo,
       radiusKm: String(normalized.radiusKm),
       followingOnly: normalized.followingOnly,
     });
@@ -78,7 +82,8 @@ export function useLocationDateFilters() {
     void setQueryFilters({
       city: EMPTY_LOCATION_DATE_FILTERS.city,
       state: EMPTY_LOCATION_DATE_FILTERS.state,
-      date: EMPTY_LOCATION_DATE_FILTERS.date,
+      dateFrom: EMPTY_LOCATION_DATE_FILTERS.dateFrom,
+      dateTo: EMPTY_LOCATION_DATE_FILTERS.dateTo,
       radiusKm: String(EMPTY_LOCATION_DATE_FILTERS.radiusKm),
       followingOnly: EMPTY_LOCATION_DATE_FILTERS.followingOnly,
     });

@@ -1,7 +1,8 @@
 export type LocationDateFilters = {
   city: string;
   state: string;
-  date: string;
+  dateFrom: string;
+  dateTo: string;
   radiusKm: number;
   followingOnly: boolean;
 };
@@ -13,7 +14,8 @@ export type RadiusFilterOption = (typeof RADIUS_FILTER_OPTIONS)[number];
 export const EMPTY_LOCATION_DATE_FILTERS: LocationDateFilters = {
   city: "",
   state: "",
-  date: "",
+  dateFrom: "",
+  dateTo: "",
   radiusKm: 100,
   followingOnly: false,
 };

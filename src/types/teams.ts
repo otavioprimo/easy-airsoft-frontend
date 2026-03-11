@@ -26,6 +26,7 @@ export type TeamRole = "OWNER" | "ADMIN" | "MEMBER";
 export type TeamMemberUser = {
   id: string;
   name: string;
+  username?: string | null;
   profilePhoto?: string | null;
   city?: string | null;
   state?: string | null;

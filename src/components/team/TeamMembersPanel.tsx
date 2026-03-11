@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SearchSelect } from "@/components/ui/search-select";
+import { UserLink } from "@/components/ui/UserLink";
 import type { TeamMember, TeamRole } from "@/types/teams";
 
 type TeamMembersPanelProps = {
@@ -86,7 +87,9 @@ export function TeamMembersPanel({
                 className="flex flex-col gap-3 rounded-2xl border border-gray-200 p-4 md:flex-row md:items-center md:justify-between"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{memberName}</p>
+                  <UserLink username={member.user?.username}>
+                    {memberName}
+                  </UserLink>
                   <p className="text-sm text-gray-600">
                     {memberLocation} • {formatRoleLabel(member.role)}
                     {isCurrentUser ? " • você" : ""}
