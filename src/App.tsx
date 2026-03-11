@@ -11,6 +11,7 @@ import HomePage from "@/pages/HomePage";
 import InviteTeamPage from "@/pages/InviteTeamPage";
 import LoginPage from "@/pages/LoginPage";
 import MyTeamsPage from "@/pages/MyTeamsPage";
+import NotificationsPage from "@/pages/NotificationsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import PublicUserProfilePage from "@/pages/PublicUserProfilePage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -66,6 +67,14 @@ function App() {
         element={
           <ProtectedRoute>
             <EditGamePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />

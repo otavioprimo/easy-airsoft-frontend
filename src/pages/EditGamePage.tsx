@@ -15,6 +15,13 @@ import {
 } from "@/hooks/queries/useGamesQueries";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
 import { useMyTeamsQuery } from "@/hooks/queries/useTeamsQueries";
+import type { GameStatus } from "@/types/games";
+
+const GAME_STATUS_LABELS: Record<GameStatus, string> = {
+  ACTIVE: "Ativo",
+  CANCELLED: "Cancelado",
+  FINISHED: "Encerrado",
+};
 
 const editGameSchema = z.object({
   fieldId: z.string().min(1, "Selecione o campo"),
@@ -48,6 +55,7 @@ const editGameSchema = z.object({
       (value) => !value || /^https:\/\/.+/.test(value),
       "Informe uma URL válida com https://",
     ),
+  status: z.enum(["ACTIVE", "CANCELLED", "FINISHED"] as const),
 });
 
 type EditGameFormData = z.infer<typeof editGameSchema>;
@@ -105,6 +113,7 @@ export default function EditGamePage() {
       maxPlayers: "",
       price: "",
       externalTicketUrl: "",
+      status: "ACTIVE",
     },
   });
 
@@ -129,6 +138,7 @@ export default function EditGamePage() {
       maxPlayers: String(game.maxPlayers),
       price: game.price !== null && game.price !== undefined ? String(game.price) : "",
       externalTicketUrl: game.externalTicketUrl ?? "",
+      status: (game.status as GameStatus | undefined) ?? "ACTIVE",
     });
   }, [gameQuery.data, reset]);
 
@@ -153,6 +163,7 @@ export default function EditGamePage() {
         maxPlayers: data.maxPlayers ? Number(data.maxPlayers) : undefined,
         price: data.price ? Number(data.price) : undefined,
         externalTicketUrl: data.externalTicketUrl?.trim() || undefined,
+        status: data.status,
       });
 
       navigate(`/app/games/${updatedGame.id}`);
@@ -251,6 +262,28 @@ export default function EditGamePage() {
               />
               {errors.fieldId && (
                 <p className="text-sm text-red-600">{errors.fieldId.message}</p>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-2xl border border-gray-200 p-4">
+            <h2 className="text-base font-semibold text-gray-900">Status do jogo</h2>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                className="flex w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm text-text-dark focus:border-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                {...register("status")}
+              >
+                {(Object.keys(GAME_STATUS_LABELS) as GameStatus[]).map((statusKey) => (
+                  <option key={statusKey} value={statusKey}>
+                    {GAME_STATUS_LABELS[statusKey]}
+                  </option>
+                ))}
+              </select>
+              {errors.status && (
+                <p className="text-sm text-red-600">{errors.status.message}</p>
               )}
             </div>
           </section>

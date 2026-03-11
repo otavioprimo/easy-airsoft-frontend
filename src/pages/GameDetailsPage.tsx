@@ -1,10 +1,11 @@
-import { Fragment, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { HomeGameActions } from "@/components/home/HomeGameActions";
 import { HomeGameMeta } from "@/components/home/HomeGameMeta";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import { StarRating } from "@/components/ui/star-rating";
 import { UserLink } from "@/components/ui/UserLink";
 import {
   Dialog,
@@ -21,6 +22,9 @@ import {
   useGameDetailsQuery,
   useUpdateParticipationMutation,
 } from "@/hooks/queries/useGamesQueries";
+import { useMyTeamsQuery } from "@/hooks/queries/useTeamsQueries";
+import { useCreateGameReviewMutation } from "@/hooks/queries/useReviewsMutations";
+import { Label } from "@/components/ui/label";
 
 const formatDate = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "full",
@@ -75,9 +79,32 @@ export default function GameDetailsPage() {
   const { isAuthenticated } = useAuth();
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
   const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
+  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
   const gameQuery = useGameDetailsQuery(gameId);
   const updateParticipationMutation = useUpdateParticipationMutation();
+  const myTeamsQuery = useMyTeamsQuery();
+  const createGameReviewMutation = useCreateGameReviewMutation(gameId);
   const fallbackLink = isAuthenticated ? "/app" : "/login";
+
+  const manageableTeamIds = useMemo(() => {
+    return (myTeamsQuery.data ?? [])
+      .filter((team) => team.currentUserRole === "OWNER" || team.currentUserRole === "ADMIN")
+      .map((team) => team.id);
+  }, [myTeamsQuery.data]);
+
+  const canEditGame = Boolean(
+    isAuthenticated &&
+    gameQuery.data?.team?.id &&
+    manageableTeamIds.includes(gameQuery.data.team.id),
+  );
+
+  const isConfirmedParticipant =
+    isAuthenticated &&
+    gameQuery.data?.myParticipationStatus === "CONFIRMED";
 
   const handleUpdateParticipation = (
     nextGameId: string,
@@ -92,6 +119,22 @@ export default function GameDetailsPage() {
       gameId: nextGameId,
       status: nextStatus,
     });
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewRating === 0) return;
+
+    try {
+      await createGameReviewMutation.mutateAsync({
+        rating: reviewRating,
+        comment: reviewComment.trim() || undefined,
+      });
+      setReviewSuccess(true);
+      setReviewRating(0);
+      setReviewComment("");
+    } catch {
+      // error handled below
+    }
   };
 
   if (gameQuery.isLoading) {
@@ -220,11 +263,31 @@ export default function GameDetailsPage() {
               <p className="mt-1 text-sm text-gray-600">
                 {formatDate.format(new Date(game.datetime))}
               </p>
+              {game.status && game.status !== "ACTIVE" && (
+                <span
+                  className={
+                    game.status === "CANCELLED"
+                      ? "mt-1 inline-block rounded-full border border-red-300 bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700"
+                      : "mt-1 inline-block rounded-full border border-gray-300 bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700"
+                  }
+                >
+                  {game.status === "CANCELLED" ? "Cancelado" : "Encerrado"}
+                </span>
+              )}
             </div>
 
-            <Link to={fallbackLink}>
-              <Button variant="outline">Voltar para Home</Button>
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              {canEditGame && (
+                <Link to={`/app/games/${game.id}/edit`}>
+                  <Button variant="outline" size="sm">
+                    Editar jogo
+                  </Button>
+                </Link>
+              )}
+              <Link to={fallbackLink}>
+                <Button variant="outline">Voltar para Home</Button>
+              </Link>
+            </div>
           </div>
 
           {game.description && (
@@ -370,6 +433,33 @@ export default function GameDetailsPage() {
             </div>
           )}
         </section>
+
+        {isConfirmedParticipant && (
+          <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div>
+              <h2 className="text-lg font-semibold text-primary">Avaliação do jogo</h2>
+              <p className="text-sm text-gray-600">
+                Você participou deste jogo. Deixe sua avaliação!
+              </p>
+            </div>
+
+            {reviewSuccess ? (
+              <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-800">
+                Obrigado pela avaliação!
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsReviewDialogOpen(true);
+                }}
+              >
+                Avaliar jogo
+              </Button>
+            )}
+          </section>
+        )}
       </div>
 
       <Dialog open={isAuthPromptOpen} onOpenChange={setIsAuthPromptOpen}>
@@ -398,6 +488,81 @@ export default function GameDetailsPage() {
               }}
             >
               Entrar ou cadastrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isReviewDialogOpen}
+        onOpenChange={(open) => {
+          setIsReviewDialogOpen(open);
+          if (!open) {
+            setReviewRating(0);
+            setReviewComment("");
+          }
+        }}
+      >
+        <DialogContent className="border border-gray-200 bg-white shadow-xl">
+          <DialogHeader>
+            <DialogTitle>Avaliar jogo</DialogTitle>
+            <DialogDescription>
+              Dê uma nota para este jogo e deixe um comentário opcional.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Nota</Label>
+              <StarRating value={reviewRating} onChange={setReviewRating} size="lg" />
+              {reviewRating === 0 && (
+                <p className="text-xs text-gray-500">Selecione uma nota de 1 a 5 estrelas</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="review-comment">Comentário (opcional)</Label>
+              <textarea
+                id="review-comment"
+                rows={3}
+                value={reviewComment}
+                onChange={(e) => {
+                  setReviewComment(e.target.value);
+                }}
+                className="flex w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                placeholder="Compartilhe sua experiência..."
+                maxLength={500}
+              />
+            </div>
+
+            {createGameReviewMutation.isError && (
+              <p className="text-sm text-red-600">
+                {getQueryErrorMessage(
+                  createGameReviewMutation.error,
+                  "Não foi possível enviar a avaliação.",
+                )}
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsReviewDialogOpen(false);
+                setReviewRating(0);
+                setReviewComment("");
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              disabled={reviewRating === 0 || createGameReviewMutation.isPending}
+              onClick={handleSubmitReview}
+            >
+              {createGameReviewMutation.isPending ? "Enviando..." : "Enviar avaliação"}
             </Button>
           </DialogFooter>
         </DialogContent>
