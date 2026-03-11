@@ -3,10 +3,30 @@ export type Notification = {
   userId: string;
   type: string;
   title: string;
-  body: string;
+  description: string;
   isRead: boolean;
-  data?: Record<string, unknown> | null;
+  referenceId?: string | null;
+  reference?: {
+    game?: {
+      id: string;
+      title: string;
+      datetime?: string | null;
+      city?: string | null;
+      state?: string | null;
+    } | null;
+    team?: {
+      id: string;
+      name: string;
+      logoUrl?: string | null;
+      city?: string | null;
+      state?: string | null;
+    } | null;
+  } | null;
   createdAt: string;
+};
+
+export type UnreadNotificationsCountResponse = {
+  unreadCount: number;
 };
 
 export type ListNotificationsResponse = {

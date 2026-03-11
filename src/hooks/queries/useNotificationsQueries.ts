@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
-import type { ListNotificationsResponse } from "@/types/notifications";
+import type {
+  ListNotificationsResponse,
+  UnreadNotificationsCountResponse,
+} from "@/types/notifications";
 
 type ApiSuccessResponse<T> = {
   success: boolean;
@@ -30,11 +33,10 @@ export function useUnreadNotificationsCountQuery() {
   return useQuery({
     queryKey: ["notifications", "unread-count", user?.id],
     queryFn: async () => {
-      const response = await api.get<ApiSuccessResponse<ListNotificationsResponse>>(
-        "/notifications",
-        { params: { page: 1, limit: 50 } },
+      const response = await api.get<ApiSuccessResponse<UnreadNotificationsCountResponse>>(
+        "/notifications/unread-count",
       );
-      return response.data.data.items.filter((n) => !n.isRead).length;
+      return response.data.data.unreadCount;
     },
     enabled: isAuthenticated,
     refetchInterval: 60000,

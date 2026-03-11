@@ -1,8 +1,10 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "react-router-dom";
 import {
   useNotificationsQuery,
+  useUnreadNotificationsCountQuery,
 } from "@/hooks/queries/useNotificationsQueries";
 import {
   useMarkNotificationReadMutation,
@@ -61,8 +63,28 @@ function NotificationItem({
             notification.isRead ? "text-gray-500" : "text-gray-700",
           )}
         >
-          {notification.body}
+          {notification.description}
         </p>
+        {notification.type === "NEW_GAME" && notification.reference?.game && (
+          <div className="mt-1 space-y-1 rounded-lg border border-primary/15 bg-primary/5 p-2">
+            <p className="text-xs font-medium text-primary">
+              Jogo: {notification.reference.game.title}
+            </p>
+            {notification.reference.team && (
+              <p className="text-xs text-gray-700">
+                Time: {notification.reference.team.name}
+              </p>
+            )}
+            <div className="pt-0.5">
+              <Link
+                to={`/app/games/${notification.reference.game.id}`}
+                className="text-xs font-semibold text-primary hover:underline"
+              >
+                Ver jogo
+              </Link>
+            </div>
+          </div>
+        )}
         <p className="text-xs text-gray-400">
           {formatDate.format(new Date(notification.createdAt))}
         </p>
@@ -91,11 +113,12 @@ function NotificationItem({
 export default function NotificationsPage() {
   const [page, setPage] = useState(1);
   const notificationsQuery = useNotificationsQuery(page);
+  const unreadCountQuery = useUnreadNotificationsCountQuery();
   const markReadMutation = useMarkNotificationReadMutation();
 
   const notifications = notificationsQuery.data?.items ?? [];
   const pagination = notificationsQuery.data?.pagination;
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = unreadCountQuery.data ?? 0;
 
   const handleMarkRead = (id: string) => {
     markReadMutation.mutate(id);
