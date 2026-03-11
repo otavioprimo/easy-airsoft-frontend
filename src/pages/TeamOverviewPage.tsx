@@ -1,8 +1,19 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StarRating } from "@/components/ui/star-rating";
 import { UserLink } from "@/components/ui/UserLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamFieldsQuery } from "@/hooks/queries/useFieldsQueries";
@@ -16,11 +27,17 @@ import {
   useFollowTeamMutation,
   useUnfollowTeamMutation,
 } from "@/hooks/queries/useTeamsMutations";
+import { useCreateFieldReviewMutation } from "@/hooks/queries/useReviewsMutations";
 import type { TeamRole } from "@/types/teams";
 
 export default function TeamOverviewPage() {
   const { teamId = "" } = useParams();
   const { user } = useAuth();
+
+  const [reviewingFieldId, setReviewingFieldId] = useState<string | null>(null);
+  const [fieldReviewRating, setFieldReviewRating] = useState(0);
+  const [fieldReviewComment, setFieldReviewComment] = useState("");
+  const [reviewedFieldIds, setReviewedFieldIds] = useState<Set<string>>(new Set());
 
   const teamQuery = useTeamQuery(teamId);
   const membersQuery = useTeamMembersQuery(teamId);
@@ -29,6 +46,7 @@ export default function TeamOverviewPage() {
   const followingTeamsQuery = useFollowingTeamsQuery();
   const followTeamMutation = useFollowTeamMutation(teamId);
   const unfollowTeamMutation = useUnfollowTeamMutation(teamId);
+  const createFieldReviewMutation = useCreateFieldReviewMutation(reviewingFieldId ?? "");
 
   const formatDate = new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
@@ -339,6 +357,26 @@ export default function TeamOverviewPage() {
                       </span>
                     )}
 
+                    {user && !reviewedFieldIds.has(field.id) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setReviewingFieldId(field.id);
+                          setFieldReviewRating(0);
+                          setFieldReviewComment("");
+                        }}
+                      >
+                        Avaliar
+                      </Button>
+                    )}
+
+                    {reviewedFieldIds.has(field.id) && (
+                      <span className="rounded-md border border-green-300 bg-green-50 px-2 py-1 text-xs text-green-700">
+                        Avaliado ✓
+                      </span>
+                    )}
+
                     {canManageTeam && (
                       <Link to={`/app/teams/${team.id}/fields/${field.id}/edit`}>
                         <Button variant="outline" size="sm">
@@ -354,6 +392,93 @@ export default function TeamOverviewPage() {
         </section>
       </div>
     </AppShell>
+
+    <Dialog
+      open={Boolean(reviewingFieldId)}
+      onOpenChange={(open) => {
+        if (!open) {
+          setReviewingFieldId(null);
+          setFieldReviewRating(0);
+          setFieldReviewComment("");
+        }
+      }}
+    >
+      <DialogContent className="border border-gray-200 bg-white shadow-xl">
+        <DialogHeader>
+          <DialogTitle>Avaliar campo</DialogTitle>
+          <DialogDescription>
+            Dê uma nota para este campo e deixe um comentário opcional.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className="space-y-2">
+            <Label>Nota</Label>
+            <StarRating value={fieldReviewRating} onChange={setFieldReviewRating} size="lg" />
+            {fieldReviewRating === 0 && (
+              <p className="text-xs text-gray-500">Selecione uma nota de 1 a 5 estrelas</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="field-review-comment">Comentário (opcional)</Label>
+            <textarea
+              id="field-review-comment"
+              rows={3}
+              value={fieldReviewComment}
+              onChange={(e) => {
+                setFieldReviewComment(e.target.value);
+              }}
+              className="flex w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+              placeholder="Compartilhe sua experiência com este campo..."
+              maxLength={500}
+            />
+          </div>
+
+          {createFieldReviewMutation.isError && (
+            <p className="text-sm text-red-600">
+              Não foi possível enviar a avaliação. Tente novamente.
+            </p>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setReviewingFieldId(null);
+              setFieldReviewRating(0);
+              setFieldReviewComment("");
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            disabled={fieldReviewRating === 0 || createFieldReviewMutation.isPending}
+            onClick={async () => {
+              if (!reviewingFieldId || fieldReviewRating === 0) return;
+
+              try {
+                await createFieldReviewMutation.mutateAsync({
+                  rating: fieldReviewRating,
+                  comment: fieldReviewComment.trim() || undefined,
+                });
+                setReviewedFieldIds((prev) => new Set([...prev, reviewingFieldId]));
+                setReviewingFieldId(null);
+                setFieldReviewRating(0);
+                setFieldReviewComment("");
+              } catch {
+                // error handled above
+              }
+            }}
+          >
+            {createFieldReviewMutation.isPending ? "Enviando..." : "Enviar avaliação"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }

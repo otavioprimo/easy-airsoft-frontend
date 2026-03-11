@@ -70,6 +70,8 @@ export type CreateGamePayload = {
   externalTicketUrl?: string;
 };
 
+export type GameStatus = "ACTIVE" | "CANCELLED" | "FINISHED";
+
 export type UpdateGamePayload = {
   fieldId?: string;
   title?: string;
@@ -78,4 +80,5 @@ export type UpdateGamePayload = {
   maxPlayers?: number;
   price?: number;
   externalTicketUrl?: string;
+  status?: GameStatus;
 };

@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
+  Bell,
   Home,
   Menu,
   Search,
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadNotificationsCountQuery } from "@/hooks/queries/useNotificationsQueries";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -23,6 +25,7 @@ type NavigationItem = {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
   isActive: (pathname: string) => boolean;
+  badge?: number;
 };
 
 export function AppShell({ children }: AppShellProps) {
@@ -30,6 +33,8 @@ export function AppShell({ children }: AppShellProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const unreadCountQuery = useUnreadNotificationsCountQuery();
+  const unreadCount = unreadCountQuery.data ?? 0;
 
   const navigationItems = useMemo<NavigationItem[]>(() => {
     if (!isAuthenticated) {
@@ -42,6 +47,13 @@ export function AppShell({ children }: AppShellProps) {
         to: "/app",
         icon: Home,
         isActive: (pathname) => pathname === "/app",
+      },
+      {
+        label: "Notificações",
+        to: "/app/notifications",
+        icon: Bell,
+        isActive: (pathname) => pathname === "/app/notifications",
+        badge: unreadCount > 0 ? unreadCount : undefined,
       },
       {
         label: "Meu perfil",
@@ -68,7 +80,7 @@ export function AppShell({ children }: AppShellProps) {
         isActive: (pathname) => pathname === "/app/games/new",
       },
     ];
-  }, [isAuthenticated]);
+  }, [isAuthenticated, unreadCount]);
 
   const homeLink = isAuthenticated ? "/app" : "/login";
 
@@ -153,13 +165,18 @@ export function AppShell({ children }: AppShellProps) {
                   >
                     <span
                       className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors",
+                        "relative flex h-7 w-7 items-center justify-center rounded-lg border transition-colors",
                         isActive
                           ? "border-white/25 bg-white/15"
                           : "border-slate-200 bg-white group-hover:border-primary/30 group-hover:bg-white",
                       )}
                     >
                       <Icon className="h-4 w-4" />
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-0.5 text-[10px] font-bold text-white">
+                          {item.badge > 99 ? "99+" : item.badge}
+                        </span>
+                      )}
                     </span>
                     {item.label}
                   </NavLink>
@@ -226,13 +243,18 @@ export function AppShell({ children }: AppShellProps) {
                     >
                       <span
                         className={cn(
-                          "flex h-7 w-7 items-center justify-center rounded-lg border transition-colors",
+                          "relative flex h-7 w-7 items-center justify-center rounded-lg border transition-colors",
                           isActive
                             ? "border-white/25 bg-white/15"
                             : "border-slate-200 bg-white group-hover:border-primary/30 group-hover:bg-white",
                         )}
                       >
                         <Icon className="h-4 w-4" />
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span className="absolute -right-1 -top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-0.5 text-[10px] font-bold text-white">
+                            {item.badge > 99 ? "99+" : item.badge}
+                          </span>
+                        )}
                       </span>
                       {item.label}
                     </NavLink>

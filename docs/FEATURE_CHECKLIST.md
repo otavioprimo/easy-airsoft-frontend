@@ -58,6 +58,8 @@ Este checklist separa claramente o status por camada:
 #### Jogos
 - [x] Criar jogo
 - [x] Selecionar time e campo no fluxo de criação
+- [x] Editar jogo pela interface
+- [x] Controle de status do jogo (`ACTIVE/CANCELLED/FINISHED`)
 
 #### Perfil
 - [x] Visualizar perfil autenticado
@@ -70,18 +72,25 @@ Este checklist separa claramente o status por camada:
 - [x] Axios com interceptors
 - [x] Design system base e layout responsivo
 
+#### Social e engajamento
+- [x] Seguir / deixar de seguir time
+- [x] Tela/lista de notificações com badge de não lidas no menu
+- [x] Marcar notificação como lida na UI
+- [x] Avaliar campo (upsert por autenticado)
+- [x] Avaliar jogo (somente participante CONFIRMED)
+
 ### ⏳ Ainda não implementado (na interface)
 
 #### Social e engajamento
-- [ ] Seguir / deixar de seguir time
-- [ ] Tela/lista de notificações
-- [ ] Marcar notificação como lida na UI
-- [ ] Avaliar campo
-- [ ] Avaliar jogo
+- [x] Seguir / deixar de seguir time
+- [x] Tela/lista de notificações
+- [x] Marcar notificação como lida na UI
+- [x] Avaliar campo
+- [x] Avaliar jogo
 
 #### Jogos (gestão avançada)
-- [ ] Edição de jogo pela interface
-- [ ] Controle visual de status do jogo (`ACTIVE/CANCELLED/FINISHED`)
+- [x] Edição de jogo pela interface
+- [x] Controle visual de status do jogo (`ACTIVE/CANCELLED/FINISHED`)
 
 #### Produto (futuro)
 - [ ] Fluxo de venda interna de vagas
