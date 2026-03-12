@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
+import { Star } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { HomeGameActions } from "@/components/home/HomeGameActions";
@@ -24,10 +25,17 @@ import {
 } from "@/hooks/queries/useGamesQueries";
 import { useMyTeamsQuery } from "@/hooks/queries/useTeamsQueries";
 import { useCreateGameReviewMutation } from "@/hooks/queries/useReviewsMutations";
+import { useFieldQuery } from "@/hooks/queries/useFieldsQueries";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const formatDate = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "full",
+  timeStyle: "short",
+});
+
+const formatReviewDate = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "short",
   timeStyle: "short",
 });
 
@@ -77,14 +85,17 @@ export default function GameDetailsPage() {
   const { gameId = "" } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [selectedPhotoUrl, setSelectedPhotoUrl] = useState<string | null>(null);
+  const [isFieldReviewsDialogOpen, setIsFieldReviewsDialogOpen] = useState(false);
   const [isAuthPromptOpen, setIsAuthPromptOpen] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
-  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   const gameQuery = useGameDetailsQuery(gameId);
+  const fieldId = gameQuery.data?.field?.id ?? "";
+  const fieldDetailsQuery = useFieldQuery(fieldId);
   const updateParticipationMutation = useUpdateParticipationMutation();
   const myTeamsQuery = useMyTeamsQuery();
   const createGameReviewMutation = useCreateGameReviewMutation(gameId);
@@ -124,14 +135,26 @@ export default function GameDetailsPage() {
   const handleSubmitReview = async () => {
     if (reviewRating === 0) return;
 
+    if (!gameQuery.data || new Date(gameQuery.data.datetime) > new Date()) {
+      toast({
+        title: "Avaliação indisponível",
+        description: "Você só pode avaliar após a data do jogo.",
+      });
+      return;
+    }
+
     try {
       await createGameReviewMutation.mutateAsync({
         rating: reviewRating,
         comment: reviewComment.trim() || undefined,
       });
-      setReviewSuccess(true);
+      setIsReviewDialogOpen(false);
       setReviewRating(0);
       setReviewComment("");
+      toast({
+        title: "Avaliação enviada",
+        description: "Obrigado por avaliar este jogo.",
+      });
     } catch {
       // error handled below
     }
@@ -206,9 +229,14 @@ export default function GameDetailsPage() {
   }
 
   const game = gameQuery.data;
+  const myReview = game.myReview;
+  const hasGameHappened = new Date(game.datetime) <= new Date();
+  const canReviewGame = isConfirmedParticipant && hasGameHappened;
   const city = game.field?.city || game.city;
   const state = game.field?.state || game.state;
   const fieldPhotos = game.field?.photos ?? [];
+  const fieldReviews = fieldDetailsQuery.data?.reviews ?? [];
+  const fieldRating = fieldDetailsQuery.data?.rating ?? { avg: 0, count: 0 };
   const confirmedParticipants = game.participants ?? [];
   const isActionLoading =
     updateParticipationMutation.isPending &&
@@ -234,6 +262,19 @@ export default function GameDetailsPage() {
     ]
       .filter(Boolean)
       .join(" — ") + teamLabel;
+
+  const ratingDistribution = [5, 4, 3, 2, 1].map((stars) => {
+    const count = fieldReviews.filter((review) => review.rating === stars).length;
+    const percentage = fieldRating.count > 0
+      ? Math.round((count / fieldRating.count) * 100)
+      : 0;
+
+    return {
+      stars,
+      count,
+      percentage,
+    };
+  });
 
   return (
     <>
@@ -370,6 +411,32 @@ export default function GameDetailsPage() {
               ))}
             </div>
           )}
+
+          <div className="rounded-xl border border-red-100 bg-red-50/60 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-red-500">Resumo das avaliações</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="text-2xl font-bold text-gray-900">{fieldRating.avg.toFixed(1)}</span>
+                  <StarRating value={Math.round(fieldRating.avg)} readonly size="sm" />
+                </div>
+                <p className="text-xs text-gray-600">
+                  {fieldRating.count.toLocaleString("pt-BR")} avaliação(ões)
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsFieldReviewsDialogOpen(true);
+                }}
+                disabled={!game.field?.id}
+              >
+                Ver avaliações
+              </Button>
+            </div>
+          </div>
         </section>
 
         <section className="space-y-3 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -443,19 +510,30 @@ export default function GameDetailsPage() {
               </p>
             </div>
 
-            {reviewSuccess ? (
-              <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-800">
-                Obrigado pela avaliação!
+            {!hasGameHappened && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+                A avaliação será liberada após a data do jogo.
               </div>
-            ) : (
+            )}
+
+            {myReview && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+                <p className="font-medium">Sua avaliação atual: {myReview.rating ?? 0}/5</p>
+                {myReview.comment && <p className="mt-1">{myReview.comment}</p>}
+              </div>
+            )}
+
+            {canReviewGame && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => {
+                  setReviewRating(myReview?.rating ?? 0);
+                  setReviewComment(myReview?.comment ?? "");
                   setIsReviewDialogOpen(true);
                 }}
               >
-                Avaliar jogo
+                {myReview ? "Editar avaliação" : "Avaliar jogo"}
               </Button>
             )}
           </section>
@@ -505,7 +583,7 @@ export default function GameDetailsPage() {
       >
         <DialogContent className="border border-gray-200 bg-white shadow-xl">
           <DialogHeader>
-            <DialogTitle>Avaliar jogo</DialogTitle>
+            <DialogTitle>{myReview ? "Editar avaliação" : "Avaliar jogo"}</DialogTitle>
             <DialogDescription>
               Dê uma nota para este jogo e deixe um comentário opcional.
             </DialogDescription>
@@ -565,6 +643,101 @@ export default function GameDetailsPage() {
               {createGameReviewMutation.isPending ? "Enviando..." : "Enviar avaliação"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isFieldReviewsDialogOpen} onOpenChange={setIsFieldReviewsDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto border border-gray-200 bg-white shadow-xl">
+          <DialogHeader>
+            <DialogTitle>Avaliações do campo</DialogTitle>
+            <DialogDescription>
+              {game.field?.name
+                ? `${game.field.name} • ${city ?? ""}${city && state ? "/" : ""}${state ?? ""}`
+                : "Veja o resumo e todos os comentários deste campo."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {fieldDetailsQuery.isLoading ? (
+            <div className="space-y-3 py-2">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">Resumo das avaliações</p>
+
+                <div className="mt-3 grid gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
+                  <div>
+                    <p className="text-4xl font-bold text-gray-900">{fieldRating.avg.toFixed(1)}</p>
+                    <div className="mt-1">
+                      <StarRating value={Math.round(fieldRating.avg)} readonly size="sm" />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-600">
+                      {fieldRating.count.toLocaleString("pt-BR")} avaliação(ões)
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {ratingDistribution.map((entry) => (
+                      <div key={entry.stars} className="flex items-center gap-2">
+                        <span className="w-4 text-xs font-medium text-gray-700">{entry.stars}</span>
+                        <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-primary/15">
+                          <div
+                            className="h-full rounded-full bg-accent"
+                            style={{ width: `${entry.percentage}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-xs text-gray-600">{entry.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-2">
+                <p className="text-sm font-semibold text-gray-900">Todas as avaliações</p>
+
+                {fieldReviews.length === 0 ? (
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                    Este campo ainda não possui avaliações públicas.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {fieldReviews.map((review) => {
+                      const reviewerName = review.user?.name || "Jogador";
+
+                      return (
+                        <div
+                          key={review.id}
+                          className="rounded-xl border border-gray-200 bg-white p-3"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-gray-900">{reviewerName}</p>
+                              {review.updatedAt && (
+                                <p className="text-xs text-gray-500">
+                                  {formatReviewDate.format(new Date(review.updatedAt))}
+                                </p>
+                              )}
+                            </div>
+
+                            <StarRating value={review.rating ?? 0} readonly size="sm" />
+                          </div>
+
+                          {review.comment && (
+                            <p className="mt-2 text-sm text-gray-700">{review.comment}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

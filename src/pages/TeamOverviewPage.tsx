@@ -335,16 +335,16 @@ export default function TeamOverviewPage() {
               {fields.map((field) => (
                 <div
                   key={field.id}
-                  className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-4"
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-4"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-gray-900">{field.name}</p>
-                    <p className="text-sm text-gray-600">
-                      {field.city}/{field.state}
-                    </p>
-                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-gray-900">{field.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {field.city}/{field.state}
+                      </p>
+                    </div>
 
-                  <div className="flex items-center gap-2">
                     {field.photos?.[0]?.photoUrl ? (
                       <img
                         src={field.photos[0].photoUrl}
@@ -356,7 +356,8 @@ export default function TeamOverviewPage() {
                         Sem foto
                       </span>
                     )}
-
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
                     {user && !reviewedFieldIds.has(field.id) && (
                       <Button
                         variant="outline"

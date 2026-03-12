@@ -105,7 +105,9 @@ export function TeamMembersPanel({
                       ]}
                       value={member.role}
                       onChange={(nextRole) => {
-                        onChangeRole(memberUserId, nextRole);
+                        if (nextRole === "ADMIN" || nextRole === "MEMBER") {
+                          onChangeRole(memberUserId, nextRole);
+                        }
                       }}
                       disabled={isUpdatingRole || isRemovingMember}
                       className="min-w-36"

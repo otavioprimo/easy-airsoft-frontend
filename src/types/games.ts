@@ -21,6 +21,11 @@ export type GameItem = {
   state?: string | null;
   status?: string | null;
   myParticipationStatus?: ParticipationStatus | null;
+  myReview?: {
+    rating?: number | null;
+    comment?: string | null;
+    updatedAt?: string | Date | null;
+  } | null;
   participants?: Array<{
     id: string;
     status: ParticipationStatus;

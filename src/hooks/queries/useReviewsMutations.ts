@@ -12,9 +12,14 @@ export function useCreateFieldReviewMutation(fieldId: string) {
 
   return useMutation({
     mutationFn: async (payload: CreateReviewPayload) => {
+      const normalizedPayload = {
+        rating: payload.rating,
+        review: payload.review ?? payload.comment,
+      };
+
       const response = await api.post<ApiSuccessResponse<unknown>>(
         `/fields/${fieldId}/reviews`,
-        payload,
+        normalizedPayload,
       );
       return response.data.data;
     },
@@ -29,9 +34,14 @@ export function useCreateGameReviewMutation(gameId: string) {
 
   return useMutation({
     mutationFn: async (payload: CreateReviewPayload) => {
+      const normalizedPayload = {
+        rating: payload.rating,
+        review: payload.review ?? payload.comment,
+      };
+
       const response = await api.post<ApiSuccessResponse<unknown>>(
-        `/games/${gameId}/reviews`,
-        payload,
+        `/reviews/games/${gameId}`,
+        normalizedPayload,
       );
       return response.data.data;
     },

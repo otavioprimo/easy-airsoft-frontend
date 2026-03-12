@@ -1,6 +1,7 @@
 export type CreateReviewPayload = {
   rating: number;
   comment?: string;
+  review?: string;
 };
 
 /** @deprecated Use CreateReviewPayload */
