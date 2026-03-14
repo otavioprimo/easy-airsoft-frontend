@@ -41,9 +41,13 @@ jobs:
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        env:
+          TF_VAR_vite_api_url: ${{ secrets.VITE_API_URL }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
+        env:
+          TF_VAR_vite_api_url: ${{ secrets.VITE_API_URL }}
 
       - name: Show Outputs
         run: terraform output

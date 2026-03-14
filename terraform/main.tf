@@ -138,3 +138,10 @@ resource "aws_ssm_parameter" "cloudfront_distribution_id" {
   value = aws_cloudfront_distribution.frontend.id
   tags  = local.common_tags
 }
+
+resource "aws_ssm_parameter" "vite_api_url" {
+  name  = "/${var.project_name}/${var.environment}/vite-api-url"
+  type  = "SecureString"
+  value = var.vite_api_url
+  tags  = local.common_tags
+}

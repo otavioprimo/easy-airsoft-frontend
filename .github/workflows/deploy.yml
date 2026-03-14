@@ -26,20 +26,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -54,8 +40,27 @@ jobs:
           CF_DISTRIBUTION=$(aws ssm get-parameter \
             --name "/${{ env.PROJECT_NAME }}/${{ env.ENVIRONMENT }}/cloudfront-distribution-id" \
             --query "Parameter.Value" --output text)
+          VITE_API_URL=$(aws ssm get-parameter \
+            --name "/${{ env.PROJECT_NAME }}/${{ env.ENVIRONMENT }}/vite-api-url" \
+            --with-decryption \
+            --query "Parameter.Value" --output text)
           echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
           echo "CF_DISTRIBUTION=$CF_DISTRIBUTION" >> $GITHUB_ENV
+          echo "VITE_API_URL=$VITE_API_URL" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ env.VITE_API_URL }}
 
       - name: Deploy to S3
         run: aws s3 sync dist/ s3://${{ env.S3_BUCKET }} --delete

@@ -15,3 +15,9 @@ variable "environment" {
   type        = string
   default     = "production"
 }
+
+variable "vite_api_url" {
+  description = "Backend API URL injected at build time (VITE_API_URL)"
+  type        = string
+  sensitive   = true
+}
