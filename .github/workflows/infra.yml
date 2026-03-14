@@ -92,15 +92,25 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Validate VITE_API_URL input
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VITE_API_URL:-}" ]; then
+            echo "VITE_API_URL is empty. Configure repository variable VITE_API_URL in GitHub Actions variables."
+            exit 1
+          fi
+
       - name: Terraform Plan
         run: terraform plan -out=tfplan
         env:
-          TF_VAR_vite_api_url: ${{ secrets.VITE_API_URL }}
+          TF_VAR_vite_api_url: ${{ vars.VITE_API_URL }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
         env:
-          TF_VAR_vite_api_url: ${{ secrets.VITE_API_URL }}
+          TF_VAR_vite_api_url: ${{ vars.VITE_API_URL }}
 
       - name: Show Outputs
         run: terraform output
