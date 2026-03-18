@@ -16,7 +16,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center gap-8">
         <section className="hidden flex-1 flex-col gap-6 rounded-3xl border border-white/15 bg-white/8 p-10 text-white backdrop-blur-md lg:flex">
           <span className="inline-flex w-fit items-center rounded-full border border-white/30 bg-white/10 px-4 py-1 text-xs font-semibold tracking-[0.18em] uppercase">
-            Easy Airsoft
+            Arenna Airsoft
           </span>
           <h2 className="max-w-lg text-4xl leading-tight font-semibold">
             Organize partidas, conecte times e acelere sua operação.

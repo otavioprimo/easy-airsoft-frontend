@@ -101,10 +101,10 @@ export function AppShell({ children }: AppShellProps) {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
           <Link to={homeLink} className="flex items-center gap-2">
             <div className="rounded-lg bg-primary px-2 py-1 text-sm font-bold text-white shadow-sm">
-              EA
+              AA
             </div>
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary/70">
-              Easy Airsoft
+              Arenna Airsoft
             </p>
           </Link>
 
@@ -142,7 +142,7 @@ export function AppShell({ children }: AppShellProps) {
           <aside className="relative z-10 flex h-full w-[88%] max-w-xs flex-col border-r border-primary/20 bg-white p-4 shadow-2xl">
             <div className="mb-4 rounded-2xl border border-primary/20 bg-[linear-gradient(140deg,#ffffff_30%,#f4f8ff_100%)] p-3 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary/70">
-                Easy Airsoft
+                Arenna Airsoft
               </p>
             </div>
 
@@ -219,7 +219,7 @@ export function AppShell({ children }: AppShellProps) {
         <aside className="sticky top-6 hidden h-[calc(100vh-3rem)] w-72 shrink-0 flex-col rounded-3xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-4 shadow-[0_12px_28px_rgba(15,23,42,0.08)] lg:flex">
           <div className="mb-4 rounded-2xl border border-primary/20 bg-[linear-gradient(140deg,#ffffff_30%,#f4f8ff_100%)] p-3 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary/70">
-              Easy Airsoft
+              Arenna Airsoft
             </p>
           </div>
 

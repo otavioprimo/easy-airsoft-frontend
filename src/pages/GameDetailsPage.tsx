@@ -279,19 +279,19 @@ export default function GameDetailsPage() {
   return (
     <>
       <Helmet>
-        <title>{`${game.title} – Easy Airsoft`}</title>
+        <title>{`${game.title} – Arenna Airsoft`}</title>
         <meta name="description" content={metaDescription} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={window.location.href} />
         {/* Open Graph */}
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={`${game.title} – Easy Airsoft`} />
+        <meta property="og:title" content={`${game.title} – Arenna Airsoft`} />
         <meta property="og:description" content={metaDescription} />
         {ogImage && <meta property="og:image" content={ogImage} />}
         <meta property="og:url" content={window.location.href} />
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${game.title} – Easy Airsoft`} />
+        <meta name="twitter:title" content={`${game.title} – Arenna Airsoft`} />
         <meta name="twitter:description" content={metaDescription} />
         {ogImage && <meta name="twitter:image" content={ogImage} />}
       </Helmet>
