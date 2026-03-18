@@ -49,10 +49,10 @@ export default function SearchTeamsPage() {
   return (
     <AppShell>
       <Helmet>
-        <title>Buscar times de airsoft – Easy Airsoft</title>
+        <title>Buscar times de airsoft – Arenna Airsoft</title>
         <meta
           name="description"
-          content="Pesquise times de airsoft por nome, estado e cidade. Encontre seu próximo time no Easy Airsoft."
+          content="Pesquise times de airsoft por nome, estado e cidade. Encontre seu próximo time no Arenna Airsoft."
         />
         <meta name="robots" content="index, follow" />
       </Helmet>

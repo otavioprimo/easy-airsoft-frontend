@@ -185,7 +185,7 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>Easy Airsoft – Encontre jogos de airsoft perto de você</title>
+        <title>Arenna Airsoft – Encontre jogos de airsoft perto de você</title>
         <meta
           name="description"
           content="Descubra jogos de airsoft na sua região, veja campos, times e confirme sua presença – tudo em um só lugar."

@@ -111,17 +111,17 @@ export default function TeamOverviewPage() {
   return (
     <>
       <Helmet>
-        <title>{`${team.name} – Easy Airsoft`}</title>
+        <title>{`${team.name} – Arenna Airsoft`}</title>
         <meta name="description" content={metaDescription} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={window.location.href} />
         <meta property="og:type" content="profile" />
-        <meta property="og:title" content={`${team.name} – Easy Airsoft`} />
+        <meta property="og:title" content={`${team.name} – Arenna Airsoft`} />
         <meta property="og:description" content={metaDescription} />
         {team.logoUrl && <meta property="og:image" content={team.logoUrl} />}
         <meta property="og:url" content={window.location.href} />
         <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={`${team.name} – Easy Airsoft`} />
+        <meta name="twitter:title" content={`${team.name} – Arenna Airsoft`} />
         <meta name="twitter:description" content={metaDescription} />
         {team.logoUrl && <meta name="twitter:image" content={team.logoUrl} />}
       </Helmet>
